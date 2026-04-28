@@ -21,8 +21,9 @@ environment:
   sdk: ">=3.5.1"
 
 dependencies:
-  flutter:
-    sdk: flutter
+  speech_to_text: ^6.6.0      # reconnaissance vocale
+  flutter_tts: ^3.8.5         # text-to-speech (réponse vocale)
+  permission_handler: ^11.0.0  #
 
 
   # The following adds the Cupertino Icons font to your application.

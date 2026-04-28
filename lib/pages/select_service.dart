@@ -3,11 +3,11 @@ import 'package:day35/localization/app_language.dart';
 import 'package:day35/models/service.dart';
 import 'package:day35/pages/chat_list.dart';
 import 'package:day35/pages/provider_selection.dart';
+import 'package:day35/features/voice/voice_screen.dart';
 import 'package:flutter/material.dart';
 
 class SelectService extends StatefulWidget {
-  const SelectService({ Key? key }) : super(key: key);
-
+  const SelectService({Key? key}) : super(key: key);
   @override
   _SelectServiceState createState() => _SelectServiceState();
 }
@@ -40,77 +40,84 @@ class _SelectServiceState extends State<SelectService> {
       appBar: AppBar(
         actions: [
           IconButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ChatListPage(),
-                ),
-              );
-            },
+            onPressed: () => Navigator.push(context,
+                MaterialPageRoute(builder: (context) => ChatListPage())),
             icon: const Icon(Icons.chat_bubble_outline),
           ),
         ],
       ),
-      floatingActionButton: selectedService >= 0 ? FloatingActionButton(
-        onPressed: () {
-          final Service pickedService = services[selectedService];
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ProviderSelectionPage(
-                serviceName: pickedService.name,
-                serviceImage: pickedService.imageURL,
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            heroTag: 'voice',
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => VoiceScreen(
+                  services: services.map((s) => s.name).toList(),
+                ),
               ),
             ),
-          );
-        },
-        child: Icon(Icons.arrow_forward_ios, size: 20,),
-        backgroundColor: primary,
-      ) : null,
-      body: NestedScrollView(
-        headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-          return <Widget>[
-            SliverToBoxAdapter(
-              child: FadeInUp(child: Padding(
-                padding: EdgeInsets.only(top: 120.0, right: 20.0, left: 20.0),
-                child: Text(
-                  lang.tr('which_service'),
-                  style: TextStyle(
-                    fontSize: 40,
-                    fontWeight: FontWeight.bold,
+            backgroundColor: primary,
+            child: const Icon(Icons.mic),
+          ),
+          if (selectedService >= 0) ...[
+            const SizedBox(height: 12),
+            FloatingActionButton(
+              heroTag: 'next',
+              onPressed: () {
+                final Service picked = services[selectedService];
+                Navigator.push(context, MaterialPageRoute(
+                  builder: (context) => ProviderSelectionPage(
+                    serviceName: picked.name,
+                    serviceImage: picked.imageURL,
                   ),
-                ),
+                ));
+              },
+              backgroundColor: primary,
+              child: const Icon(Icons.arrow_forward_ios, size: 20),
+            ),
+          ],
+        ],
+      ),
+      body: NestedScrollView(
+        headerSliverBuilder: (context, _) => [
+          SliverToBoxAdapter(
+            child: FadeInUp(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 120, right: 20, left: 20),
+                child: Text(lang.tr('which_service'),
+                    style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold)),
               ),
-            ))
-          ];
-        },
+            ),
+          ),
+        ],
         body: Padding(
-          padding: EdgeInsets.all(20.0),
+          padding: const EdgeInsets.all(20),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
+            children: [
               Expanded(
                 child: GridView.builder(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     childAspectRatio: 1.0,
-                    crossAxisSpacing: 20.0,
-                    mainAxisSpacing: 20.0,
+                    crossAxisSpacing: 20,
+                    mainAxisSpacing: 20,
                   ),
-                  physics: BouncingScrollPhysics(),
+                  physics: const BouncingScrollPhysics(),
                   itemCount: services.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    return FadeInUp(
-                      delay: Duration(milliseconds: 500 * index),
-                      child: serviceContainer(services[index].imageURL, services[index].name, index));
-                  }
+                  itemBuilder: (context, index) => FadeInUp(
+                    delay: Duration(milliseconds: 500 * index),
+                    child: serviceContainer(
+                        services[index].imageURL, services[index].name, index),
+                  ),
                 ),
               ),
-            ]
+            ],
           ),
         ),
-      )
+      ),
     );
   }
 
@@ -118,34 +125,28 @@ class _SelectServiceState extends State<SelectService> {
     final AppLanguageController lang = AppLanguageController.instance;
     final Color primary = Theme.of(context).colorScheme.primary;
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          if (selectedService == index)
-            selectedService = -1;
-          else
-            selectedService = index;
-        });
-      },
+      onTap: () => setState(() =>
+          selectedService = selectedService == index ? -1 : index),
       child: AnimatedContainer(
-        duration: Duration(milliseconds: 300),
-        padding: EdgeInsets.all(10.0),
+        duration: const Duration(milliseconds: 300),
+        padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
           color: selectedService == index
               ? primary.withOpacity(0.14)
               : Theme.of(context).cardColor.withOpacity(0.8),
           border: Border.all(
             color: selectedService == index ? primary : Colors.transparent,
-            width: 2.0,
+            width: 2,
           ),
-          borderRadius: BorderRadius.circular(20.0),
+          borderRadius: BorderRadius.circular(20),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
+          children: [
             Image.network(image, height: 80),
-            SizedBox(height: 20,),
-            Text(lang.trService(name), style: TextStyle(fontSize: 20),)
-          ]
+            const SizedBox(height: 20),
+            Text(lang.trService(name), style: const TextStyle(fontSize: 20)),
+          ],
         ),
       ),
     );
