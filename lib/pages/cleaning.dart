@@ -2,6 +2,7 @@ import 'package:animate_do/animate_do.dart';
 import 'package:day35/models/service_provider.dart';
 import 'package:day35/pages/chat_list.dart';
 import 'package:day35/pages/date_time.dart';
+import 'package:day35/widgets/theme_toggle_action.dart';
 import 'package:flutter/material.dart';
 
 class CleaningPage extends StatefulWidget {
@@ -29,6 +30,7 @@ class _CleaningPageState extends State<CleaningPage> {
     return Scaffold(
       appBar: AppBar(
         actions: [
+          const ThemeToggleAction(),
           IconButton(
             onPressed: () {
               Navigator.push(
@@ -50,7 +52,15 @@ class _CleaningPageState extends State<CleaningPage> {
               builder: (context) => DateAndTime(
                 serviceName: 'Cleaning',
                 providerName: 'Default Provider',
+                providerCity: 'Tunis',
+                providerImageUrl: 'https://i.pravatar.cc/150?u=default-provider',
                 basePriceTnd: 55,
+                distanceKm: null,
+                availabilitySlots: const <String>[
+                  'Today 18:00',
+                  'Tomorrow 09:30',
+                  'Tomorrow 15:00',
+                ],
                 extras: const <ServiceExtra>[
                   ServiceExtra(
                     name: 'Windows',

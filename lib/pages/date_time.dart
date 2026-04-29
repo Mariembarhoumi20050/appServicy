@@ -1,22 +1,32 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:day35/localization/app_language.dart';
+import 'package:day35/models/chat_contact.dart';
 import 'package:day35/models/service_provider.dart';
+import 'package:day35/pages/chat_detail.dart';
 import 'package:day35/pages/chat_list.dart';
-import 'package:day35/pages/home.dart';
+import 'package:day35/widgets/theme_toggle_action.dart';
 import 'package:flutter/material.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 class DateAndTime extends StatefulWidget {
   final String serviceName;
   final String providerName;
+  final String providerCity;
+  final String providerImageUrl;
   final int basePriceTnd;
+  final double? distanceKm;
+  final List<String> availabilitySlots;
   final List<ServiceExtra> extras;
 
   const DateAndTime({
     Key? key,
     required this.serviceName,
     required this.providerName,
+    required this.providerCity,
+    required this.providerImageUrl,
     required this.basePriceTnd,
+    this.distanceKm,
+    this.availabilitySlots = const <String>[],
     required this.extras,
   }) : super(key: key);
 
@@ -29,6 +39,10 @@ class _DateAndTimeState extends State<DateAndTime> {
   int _selectedRepeat = 0;
   String _selectedHour = '13:30';
   List<int> _selectedExtraServices = [];
+  final TextEditingController _issueController = TextEditingController();
+  final TextEditingController _budgetController = TextEditingController();
+  bool _isUrgent = false;
+  String? _selectedProblemPreset;
 
   ItemScrollController _scrollController = ItemScrollController();
 
@@ -122,13 +136,82 @@ class _DateAndTimeState extends State<DateAndTime> {
     'Every month'
   ];
 
-  int get _totalPrice {
-    int extraTotal = 0;
-    for (final int i in _selectedExtraServices) {
-      extraTotal += widget.extras[i].priceTnd;
-    }
-    return widget.basePriceTnd + extraTotal;
+  static const Map<String, List<String>> _problemPresetsByService =
+      <String, List<String>>{
+    'Cleaning': <String>[
+      'Deep cleaning (full home)',
+      'Kitchen + bathroom focus',
+      'Post-renovation cleaning',
+      'Weekly maintenance cleaning',
+    ],
+    'Plumber': <String>[
+      'Water leak',
+      'Blocked sink / drain',
+      'Water heater issue',
+      'Low pressure',
+    ],
+    'Electrician': <String>[
+      'Power outage in room',
+      'Socket/switch replacement',
+      'Lighting installation',
+      'Circuit safety check',
+    ],
+    'AC Repair': <String>[
+      'No cooling',
+      'Noisy AC',
+      'Water dripping',
+      'Seasonal maintenance',
+    ],
+    'Painter': <String>[
+      'Single room repaint',
+      'Full apartment repaint',
+      'Wall crack touch-up',
+      'Color consultation',
+    ],
+  };
+
+  List<String> get _problemPresets =>
+      _problemPresetsByService[widget.serviceName] ??
+      <String>[
+        'Installation',
+        'Repair',
+        'Maintenance',
+        'Inspection',
+      ];
+
+  int get _distanceFee {
+    final double? distance = widget.distanceKm;
+    if (distance == null) return 0;
+    if (distance <= 5) return 0;
+    if (distance <= 12) return 5;
+    if (distance <= 20) return 10;
+    return 15;
   }
+
+  int get _totalPrice {
+    final int extraTotal = _selectedExtraServices.fold<int>(
+      0,
+      (int sum, int i) => sum + widget.extras[i].priceTnd,
+    );
+    int total = widget.basePriceTnd + extraTotal;
+    total += _distanceFee;
+    if (_issueController.text.trim().length > 35) {
+      total += 8;
+    }
+    if (_isUrgent) {
+      total += 15;
+    }
+    if (_selectedRepeat == 1) {
+      total -= 5;
+    } else if (_selectedRepeat == 2) {
+      total -= 7;
+    } else if (_selectedRepeat == 3) {
+      total -= 10;
+    }
+    return total < 20 ? 20 : total;
+  }
+
+  int get _minNegotiablePrice => (_totalPrice * 0.85).round();
 
   @override
   void initState() {
@@ -144,12 +227,20 @@ class _DateAndTimeState extends State<DateAndTime> {
   }
 
   @override
+  void dispose() {
+    _issueController.dispose();
+    _budgetController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final AppLanguageController lang = AppLanguageController.instance;
     final Color primary = Theme.of(context).colorScheme.primary;
     return Scaffold(
       appBar: AppBar(
         actions: [
+          const ThemeToggleAction(),
           IconButton(
             onPressed: () {
               Navigator.push(
@@ -163,16 +254,14 @@ class _DateAndTimeState extends State<DateAndTime> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => HomePage(),
-            ),
-          );
-        },
-        child: Icon(Icons.arrow_forward_ios),
+      bottomNavigationBar: SafeArea(
+        minimum: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+        child: ElevatedButton.icon(
+          onPressed: _openNegotiationChat,
+          icon: const Icon(Icons.arrow_forward),
+          label: const Text('Next: Negotiate & Confirm'),
+          style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(52)),
+        ),
       ),
       body: NestedScrollView(
         headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
@@ -192,11 +281,12 @@ class _DateAndTimeState extends State<DateAndTime> {
             ))
           ];
         },
-        body: Padding(
+        body: ListView(
           padding: EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
               SizedBox(height: 30,),
               FadeInUp(child: Row(
                 children: [
@@ -377,7 +467,99 @@ class _DateAndTimeState extends State<DateAndTime> {
                   },  
                 )
               ),
+              if (widget.availabilitySlots.isNotEmpty) ...[
+                const SizedBox(height: 14),
+                Text(
+                  'Provider availability',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: widget.availabilitySlots
+                      .map(
+                        (String slot) => Chip(
+                          avatar: const Icon(Icons.schedule, size: 16),
+                          label: Text(slot),
+                        ),
+                      )
+                      .toList(),
+                ),
+              ],
               SizedBox(height: 20),
+              FadeInUp(
+                child: Text(
+                  'Select issue category',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: _problemPresets
+                    .map(
+                      (String preset) => ChoiceChip(
+                        label: Text(preset),
+                        selected: _selectedProblemPreset == preset,
+                        onSelected: (bool selected) {
+                          setState(() {
+                            _selectedProblemPreset = selected ? preset : null;
+                            if (selected && _issueController.text.trim().isEmpty) {
+                              _issueController.text = preset;
+                            }
+                          });
+                        },
+                      ),
+                    )
+                    .toList(),
+              ),
+              const SizedBox(height: 16),
+              FadeInUp(
+                child: Text(
+                  'Describe your problem',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                ),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: _issueController,
+                maxLines: 3,
+                onChanged: (_) => setState(() {}),
+                decoration: const InputDecoration(
+                  hintText: 'Example: Water leak under kitchen sink since yesterday...',
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _budgetController,
+                      keyboardType: TextInputType.number,
+                      onChanged: (_) => setState(() {}),
+                      decoration: const InputDecoration(
+                        labelText: 'Your budget (TND)',
+                        hintText: '80',
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: SwitchListTile(
+                      value: _isUrgent,
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('Urgent'),
+                      onChanged: (bool value) {
+                        setState(() => _isUrgent = value);
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 12),
               FadeInUp(
                 child: Container(
                   padding: const EdgeInsets.all(14),
@@ -392,17 +574,59 @@ class _DateAndTimeState extends State<DateAndTime> {
                       const SizedBox(height: 4),
                       Text('${lang.tr('base_price')}: ${widget.basePriceTnd} TND'),
                       const SizedBox(height: 4),
-                      Text('${lang.tr('total')}: $_totalPrice TND',
+                      if (widget.distanceKm != null) ...[
+                        Text(
+                          'Distance fee (${widget.distanceKm!.toStringAsFixed(1)} km): +$_distanceFee TND',
+                        ),
+                        const SizedBox(height: 4),
+                      ],
+                      Text('Estimated quote: $_totalPrice TND',
                           style: const TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 16)),
+                      const SizedBox(height: 4),
+                      Text('Negotiation range: $_minNegotiablePrice - $_totalPrice TND'),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Tap the chat button to negotiate directly with ${widget.providerName.split(' ').first}.',
+                      ),
                     ],
                   ),
                 ),
               ),
-            ],
-          ), 
+                const SizedBox(height: 24),
+              ],
+            ),
+          ],
         ),
       )
+    );
+  }
+
+  void _openNegotiationChat() {
+    final String issueText = _issueController.text.trim().isEmpty
+        ? (_selectedProblemPreset ??
+            'I need help with ${widget.serviceName.toLowerCase()}.')
+        : _issueController.text.trim();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ChatDetailPage(
+          contact: ChatContact(
+            name: widget.providerName,
+            service: widget.serviceName,
+            city: widget.providerCity,
+            imageUrl: widget.providerImageUrl,
+            quotedPriceTnd: _totalPrice,
+            minNegotiablePriceTnd: _minNegotiablePrice,
+            issueDescription: issueText,
+            starterMessages: <String>[
+              'Salem ${widget.providerName.split(' ').first}, $issueText',
+              'Your estimated quote is $_totalPrice TND. My budget is ${_budgetController.text.trim().isEmpty ? 'open to discuss' : '${_budgetController.text.trim()} TND'}.',
+              'Can we negotiate a bit?',
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

@@ -5,6 +5,9 @@ class ServiceProvider {
   final double rating;
   final int basePriceTnd;
   final List<String> starterMessages;
+  final double latitude;
+  final double longitude;
+  final List<String> availabilitySlots;
 
   const ServiceProvider({
     required this.name,
@@ -13,6 +16,9 @@ class ServiceProvider {
     required this.rating,
     required this.basePriceTnd,
     required this.starterMessages,
+    required this.latitude,
+    required this.longitude,
+    required this.availabilitySlots,
   });
 }
 

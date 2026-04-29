@@ -106,6 +106,48 @@ class _StartPageState extends State<StartPage> {
           children: [
             const SizedBox(height: 20),
             Container(
+              margin: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(22),
+                gradient: LinearGradient(
+                  colors: [
+                    Theme.of(context).colorScheme.primary.withValues(alpha: 0.18),
+                    Theme.of(context).colorScheme.secondary.withValues(alpha: 0.08),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              child: Column(
+                children: [
+                  FadeInUp(
+                    child: Image.asset(
+                      'logo.png',
+                      height: 80,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    lang.tr('home_hero'),
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    lang.tr('home_desc'),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.78),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 18),
+            Container(
               padding: const EdgeInsets.symmetric(horizontal: 28),
               height: 260,
               width: MediaQuery.of(context).size.width,
@@ -125,35 +167,6 @@ class _StartPageState extends State<StartPage> {
                         services[index].imageURL, services[index].name, index),
                   );
                 },
-              ),
-            ),
-            const SizedBox(height: 20),
-            FadeInUp(
-              child: Image.asset(
-                'logo.png',
-                height: 80,
-                fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 28),
-              child: Text(
-                lang.tr('home_hero'),
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 36),
-              child: Text(
-                lang.tr('home_desc'),
-                textAlign: TextAlign.center,
               ),
             ),
             const SizedBox(height: 24),
@@ -189,8 +202,8 @@ class _StartPageState extends State<StartPage> {
         padding: EdgeInsets.all(8.0),
         decoration: BoxDecoration(
           color: selectedService == index
-              ? primary.withOpacity(0.12)
-              : Theme.of(context).cardColor.withOpacity(0.75),
+              ? primary.withValues(alpha: 0.12)
+              : Theme.of(context).cardColor.withValues(alpha: 0.75),
           border: Border.all(
             color: selectedService == index ? primary : Colors.transparent,
             width: 2.0,

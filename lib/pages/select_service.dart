@@ -4,6 +4,7 @@ import 'package:day35/models/service.dart';
 import 'package:day35/pages/chat_list.dart';
 import 'package:day35/pages/provider_selection.dart';
 import 'package:day35/features/voice/voice_screen.dart';
+import 'package:day35/widgets/theme_toggle_action.dart';
 import 'package:flutter/material.dart';
 
 class SelectService extends StatefulWidget {
@@ -39,6 +40,7 @@ class _SelectServiceState extends State<SelectService> {
     return Scaffold(
       appBar: AppBar(
         actions: [
+          const ThemeToggleAction(),
           IconButton(
             onPressed: () => Navigator.push(context,
                 MaterialPageRoute(builder: (context) => ChatListPage())),
@@ -86,9 +88,25 @@ class _SelectServiceState extends State<SelectService> {
           SliverToBoxAdapter(
             child: FadeInUp(
               child: Padding(
-                padding: const EdgeInsets.only(top: 120, right: 20, left: 20),
-                child: Text(lang.tr('which_service'),
-                    style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold)),
+                padding: const EdgeInsets.only(top: 42, right: 20, left: 20),
+                child: Container(
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    gradient: LinearGradient(
+                      colors: [
+                        primary.withValues(alpha: 0.18),
+                        primary.withValues(alpha: 0.05),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
+                  child: Text(
+                    lang.tr('which_service'),
+                    style: const TextStyle(fontSize: 34, fontWeight: FontWeight.bold),
+                  ),
+                ),
               ),
             ),
           ),
@@ -132,8 +150,8 @@ class _SelectServiceState extends State<SelectService> {
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
           color: selectedService == index
-              ? primary.withOpacity(0.14)
-              : Theme.of(context).cardColor.withOpacity(0.8),
+              ? primary.withValues(alpha: 0.14)
+              : Theme.of(context).cardColor.withValues(alpha: 0.8),
           border: Border.all(
             color: selectedService == index ? primary : Colors.transparent,
             width: 2,

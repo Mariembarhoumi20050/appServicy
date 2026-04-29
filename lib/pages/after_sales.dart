@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:day35/models/agreed_booking.dart';
+import 'package:day35/widgets/theme_toggle_action.dart';
 
 class AfterSalesPage extends StatelessWidget {
   const AfterSalesPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final List<AgreedBooking> bookings = BookingRepository.all();
     return Scaffold(
-      appBar: AppBar(title: const Text('Service Apres Vente')),
+      appBar: AppBar(
+        title: const Text('Service Apres Vente'),
+        actions: const <Widget>[
+          ThemeToggleAction(),
+        ],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
@@ -33,6 +41,50 @@ class AfterSalesPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
+          const Text(
+            'Saved negotiated bookings',
+            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+          ),
+          const SizedBox(height: 10),
+          if (bookings.isEmpty)
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.amber.shade50,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Text(
+                'No agreed bookings yet. Negotiate in chat and tap Save on the final price badge.',
+              ),
+            ),
+          ...bookings.map(
+            (AgreedBooking booking) => Card(
+              margin: const EdgeInsets.only(bottom: 10),
+              child: ListTile(
+                leading: const CircleAvatar(
+                  child: Icon(Icons.handshake_outlined),
+                ),
+                title: Text('${booking.providerName} - ${booking.service}'),
+                subtitle: Text(
+                  '${booking.city}\n${booking.issueDescription}',
+                ),
+                isThreeLine: true,
+                trailing: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade100,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    '${booking.finalPriceTnd} TND',
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
           const Text(
             'You can contact support for:',
             style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),

@@ -1,6 +1,7 @@
 import 'package:day35/models/chat_contact.dart';
 import 'package:day35/localization/app_language.dart';
 import 'package:day35/pages/chat_detail.dart';
+import 'package:day35/widgets/theme_toggle_action.dart';
 import 'package:flutter/material.dart';
 
 class ChatListPage extends StatelessWidget {
@@ -12,6 +13,9 @@ class ChatListPage extends StatelessWidget {
       service: 'Plumber',
       city: 'Tunis',
       imageUrl: 'https://i.pravatar.cc/150?img=12',
+      quotedPriceTnd: 78,
+      minNegotiablePriceTnd: 65,
+      issueDescription: 'Kitchen water leak with low pressure.',
       starterMessages: <String>[
         'Hi Mohamed, I have a water leak in the kitchen.',
         'Can you come today please?',
@@ -22,6 +26,9 @@ class ChatListPage extends StatelessWidget {
       service: 'Cleaning',
       city: 'Sfax',
       imageUrl: 'https://i.pravatar.cc/150?img=5',
+      quotedPriceTnd: 62,
+      minNegotiablePriceTnd: 50,
+      issueDescription: 'Deep cleaning for 2-bedroom apartment.',
       starterMessages: <String>[
         'Salem Asma, I need full apartment cleaning.',
       ],
@@ -31,6 +38,9 @@ class ChatListPage extends StatelessWidget {
       service: 'AC Repair',
       city: 'Sousse',
       imageUrl: 'https://i.pravatar.cc/150?img=31',
+      quotedPriceTnd: 88,
+      minNegotiablePriceTnd: 74,
+      issueDescription: 'AC not cooling and making noise.',
       starterMessages: <String>[
         'My AC is not cooling well.',
         'Do you work in Khzema area?',
@@ -41,6 +51,9 @@ class ChatListPage extends StatelessWidget {
       service: 'Babysitting',
       city: 'Nabeul',
       imageUrl: 'https://i.pravatar.cc/150?img=25',
+      quotedPriceTnd: 45,
+      minNegotiablePriceTnd: 38,
+      issueDescription: 'Babysitting for Friday evening (4 hours).',
       starterMessages: <String>[
         'Hello, I need babysitting on Friday evening.',
       ],
@@ -53,6 +66,9 @@ class ChatListPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('${lang.tr('app_name')} chat'),
+        actions: const <Widget>[
+          ThemeToggleAction(),
+        ],
       ),
       body: ListView.separated(
         itemCount: contacts.length,
