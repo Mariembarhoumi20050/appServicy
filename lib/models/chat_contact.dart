@@ -7,6 +7,10 @@ class ChatContact {
   final int? quotedPriceTnd;
   final int? minNegotiablePriceTnd;
   final String? issueDescription;
+  final bool isClient;
+  final bool isUrgent;
+  final bool isIdentityVerified;
+  final int? clientBudgetTnd;
 
   ChatContact({
     required this.name,
@@ -17,5 +21,9 @@ class ChatContact {
     this.quotedPriceTnd,
     this.minNegotiablePriceTnd,
     this.issueDescription,
+    this.isClient = false,
+    this.isUrgent = false,
+    this.isIdentityVerified = true,
+    this.clientBudgetTnd,
   });
 }

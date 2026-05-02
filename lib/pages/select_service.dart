@@ -2,7 +2,7 @@ import 'package:animate_do/animate_do.dart';
 import 'package:day35/localization/app_language.dart';
 import 'package:day35/models/service.dart';
 import 'package:day35/pages/chat_list.dart';
-import 'package:day35/pages/provider_selection.dart';
+import 'package:day35/pages/service_subcategory_page.dart';
 import 'package:day35/features/voice/voice_screen.dart';
 import 'package:day35/widgets/theme_toggle_action.dart';
 import 'package:flutter/material.dart';
@@ -71,7 +71,7 @@ class _SelectServiceState extends State<SelectService> {
               onPressed: () {
                 final Service picked = services[selectedService];
                 Navigator.push(context, MaterialPageRoute(
-                  builder: (context) => ProviderSelectionPage(
+                  builder: (context) => ServiceSubCategoryPage(
                     serviceName: picked.name,
                     serviceImage: picked.imageURL,
                   ),

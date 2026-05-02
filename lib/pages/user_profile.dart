@@ -1,3 +1,5 @@
+import 'package:day35/pages/my_bookings_page.dart';
+import 'package:day35/pages/edit_profile_page.dart';
 import 'package:flutter/material.dart';
 import 'package:day35/widgets/theme_toggle_action.dart';
 
@@ -8,6 +10,14 @@ class UserProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final Color primary = Theme.of(context).colorScheme.primary;
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    // Client data
+    const String userName = 'Bacem Ben Salah';
+    const String userEmail = 'bacem@email.com';
+    const String userPhone = '+216 55 123 456';
+    const String userLocation = 'Tunis, Tunisia';
+    const String userImage = 'https://uifaces.co/our-content/donated/NY9hnAbp.jpg';
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Profile'),
@@ -25,7 +35,7 @@ class UserProfilePage extends StatelessWidget {
               gradient: LinearGradient(
                 colors: isDark
                     ? <Color>[Colors.blueGrey.shade900, Colors.black87]
-                    : <Color>[primary, primary.withOpacity(0.75)],
+                    : <Color>[primary, primary.withValues(alpha: 0.75)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -34,13 +44,11 @@ class UserProfilePage extends StatelessWidget {
               children: [
                 const CircleAvatar(
                   radius: 44,
-                  backgroundImage: NetworkImage(
-                    'https://uifaces.co/our-content/donated/NY9hnAbp.jpg',
-                  ),
+                  backgroundImage: NetworkImage(userImage),
                 ),
                 const SizedBox(height: 12),
                 const Text(
-                  'Bacem Ben Salah',
+                  userName,
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
@@ -49,8 +57,8 @@ class UserProfilePage extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'bacem@email.com',
-                  style: TextStyle(color: Colors.white.withOpacity(0.9)),
+                  userEmail,
+                  style: TextStyle(color: Colors.white.withValues(alpha: 0.9)),
                 ),
                 const SizedBox(height: 16),
                 Row(
@@ -69,13 +77,13 @@ class UserProfilePage extends StatelessWidget {
             context,
             icon: Icons.phone_outlined,
             title: 'Phone',
-            value: '+216 55 123 456',
+            value: userPhone,
           ),
           _infoTile(
             context,
             icon: Icons.location_on_outlined,
             title: 'Location',
-            value: 'Tunis, Tunisia',
+            value: userLocation,
           ),
           _infoTile(
             context,
@@ -85,7 +93,18 @@ class UserProfilePage extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           ElevatedButton.icon(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const EditProfilePage(
+                    initialName: userName,
+                    initialService: 'Client Account',
+                    initialImageUrl: userImage,
+                  ),
+                ),
+              );
+            },
             icon: const Icon(Icons.edit_outlined),
             label: const Text('Edit Profile'),
             style:
@@ -93,7 +112,12 @@ class UserProfilePage extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           OutlinedButton.icon(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const MyBookingsPage()),
+              );
+            },
             icon: const Icon(Icons.history),
             label: const Text('Booking History'),
             style:
@@ -144,7 +168,7 @@ class _ProfileMetric extends StatelessWidget {
         Text(
           title,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.9),
+            color: Colors.white.withValues(alpha: 0.9),
             fontSize: 12,
           ),
         ),

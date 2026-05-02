@@ -1,5 +1,6 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:day35/localization/app_language.dart';
+import 'package:day35/models/booking.dart';
 import 'package:day35/models/chat_contact.dart';
 import 'package:day35/models/service.dart';
 import 'package:day35/models/service_provider.dart';
@@ -7,8 +8,10 @@ import 'package:day35/pages/after_sales.dart';
 import 'package:day35/pages/chat_detail.dart';
 import 'package:day35/pages/chat_list.dart';
 import 'package:day35/pages/date_time.dart';
+import 'package:day35/pages/my_bookings_page.dart';
 import 'package:day35/pages/offerer_profile.dart';
 import 'package:day35/pages/user_profile.dart';
+import 'package:day35/theme/app_theme.dart';
 import 'package:day35/widgets/theme_toggle_action.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -242,6 +245,15 @@ class _HomePageState extends State<HomePage> {
             },
             icon: Icon(Icons.verified_user_outlined, color: Theme.of(context).iconTheme.color, size: 28),
           ),
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const MyBookingsPage()),
+              );
+            },
+            icon: Icon(Icons.timeline_rounded, color: Theme.of(context).iconTheme.color, size: 28),
+          ),
         ],
         leading: GestureDetector(
           onTap: () {
@@ -261,6 +273,51 @@ class _HomePageState extends State<HomePage> {
       body: SingleChildScrollView(
         child: Column(
           children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                CompetitionTokens.pagePadding,
+                10,
+                CompetitionTokens.pagePadding,
+                8,
+              ),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: CompetitionTokens.heroGradient(primary),
+                  borderRadius: BorderRadius.circular(CompetitionTokens.radiusLg),
+                  boxShadow: CompetitionTokens.softShadow(primary),
+                ),
+                child: const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Book trusted help in under 60 seconds',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Speed + Safety + Smart UX',
+                      style: TextStyle(color: Colors.white, fontSize: 13),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: CompetitionTokens.pagePadding),
+              child: _buildTrustCards(),
+            ),
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: CompetitionTokens.pagePadding),
+              child: _buildOneTapRebook(),
+            ),
+            const SizedBox(height: 12),
             FadeInUp(child: Padding(
               padding: EdgeInsets.only(left: 20.0, top: 10.0, right: 10.0),
               child: Row(
@@ -587,6 +644,114 @@ class _HomePageState extends State<HomePage> {
               },
               child: const Text('Profile / Rate'),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTrustCards() {
+    final List<Map<String, String>> cards = <Map<String, String>>[
+      <String, String>{'title': 'Verified ID', 'value': '100%'},
+      <String, String>{'title': 'Avg. rating', 'value': '4.8/5'},
+      <String, String>{'title': 'Jobs done', 'value': '2.4k+'},
+      <String, String>{'title': 'Response', 'value': '< 3 min'},
+    ];
+    return SizedBox(
+      height: 92,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: cards.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 10),
+        itemBuilder: (BuildContext context, int index) {
+          final item = cards[index];
+          return Container(
+            width: 118,
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
+              borderRadius: BorderRadius.circular(CompetitionTokens.radiusSm),
+              border: Border.all(color: Theme.of(context).dividerColor),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item['value']!,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  item['title']!,
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildOneTapRebook() {
+    final List<Booking> bookings = BookingStore.instance.all;
+    if (bookings.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    final Booking latest = bookings.last;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(CompetitionTokens.radiusMd),
+        border: Border.all(color: Theme.of(context).dividerColor),
+        boxShadow: CompetitionTokens.softShadow(Theme.of(context).colorScheme.primary),
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(backgroundImage: NetworkImage(latest.providerImageUrl)),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '1-tap rebook: ${latest.providerName}',
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
+                Text(
+                  latest.serviceName,
+                  style: TextStyle(color: Theme.of(context).hintColor),
+                ),
+              ],
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => DateAndTime(
+                    serviceName: latest.serviceName,
+                    providerName: latest.providerName,
+                    providerCity: 'Nearby',
+                    providerImageUrl: latest.providerImageUrl,
+                    basePriceTnd: latest.price,
+                    availabilitySlots: const <String>[
+                      'Today 18:00',
+                      'Tomorrow 09:30',
+                    ],
+                    extras: const <ServiceExtra>[],
+                  ),
+                ),
+              );
+            },
+            child: const Text('Rebook'),
           ),
         ],
       ),

@@ -133,8 +133,8 @@ class _CleaningPageState extends State<CleaningPage> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10.0),
           color: _selectedRooms.contains(index)
-              ? Theme.of(context).colorScheme.primary.withOpacity(0.16)
-              : Theme.of(context).cardColor.withOpacity(0.75),
+              ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.16)
+              : Theme.of(context).cardColor.withValues(alpha: 0.75),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
@@ -154,7 +154,7 @@ class _CleaningPageState extends State<CleaningPage> {
                   Container(
                     padding: EdgeInsets.all(5.0),
                     decoration: BoxDecoration(
-                      color: Colors.greenAccent.shade100.withOpacity(0.3),
+                      color: Colors.greenAccent.shade100.withValues(alpha: 0.3),
                       borderRadius: BorderRadius.circular(10.0),
                     ),
                     child: Icon(Icons.check, color: Colors.green, size: 20,)
@@ -188,7 +188,7 @@ class _CleaningPageState extends State<CleaningPage> {
                             width: 50,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(10.0),
-                              color: room[3] == index + 1 ? room[2].withOpacity(0.5) : room[2].shade200.withOpacity(0.5),
+                              color: room[3] == index + 1 ? room[2].withValues(alpha: 0.5) : room[2].shade200.withValues(alpha: 0.5),
                             ),
                             child: Center(child: Text((index + 1).toString() , style: TextStyle(fontSize: 22, color: Colors.white),)),
                           ),

@@ -1,11 +1,13 @@
 import 'package:day35/models/chat_contact.dart';
+import 'package:day35/services/storage_service.dart';
 import 'package:day35/localization/app_language.dart';
 import 'package:day35/pages/chat_detail.dart';
-import 'package:day35/widgets/theme_toggle_action.dart';
+import 'package:day35/widgets/app_actions.dart';
 import 'package:flutter/material.dart';
 
 class ChatListPage extends StatelessWidget {
-  ChatListPage({super.key});
+  final bool showClientsOnly;
+  ChatListPage({super.key, this.showClientsOnly = false});
 
   final List<ChatContact> contacts = <ChatContact>[
     ChatContact(
@@ -16,6 +18,7 @@ class ChatListPage extends StatelessWidget {
       quotedPriceTnd: 78,
       minNegotiablePriceTnd: 65,
       issueDescription: 'Kitchen water leak with low pressure.',
+      isClient: true,
       starterMessages: <String>[
         'Hi Mohamed, I have a water leak in the kitchen.',
         'Can you come today please?',
@@ -29,6 +32,7 @@ class ChatListPage extends StatelessWidget {
       quotedPriceTnd: 62,
       minNegotiablePriceTnd: 50,
       issueDescription: 'Deep cleaning for 2-bedroom apartment.',
+      isClient: true,
       starterMessages: <String>[
         'Salem Asma, I need full apartment cleaning.',
       ],
@@ -41,6 +45,7 @@ class ChatListPage extends StatelessWidget {
       quotedPriceTnd: 88,
       minNegotiablePriceTnd: 74,
       issueDescription: 'AC not cooling and making noise.',
+      isClient: false,
       starterMessages: <String>[
         'My AC is not cooling well.',
         'Do you work in Khzema area?',
@@ -54,6 +59,7 @@ class ChatListPage extends StatelessWidget {
       quotedPriceTnd: 45,
       minNegotiablePriceTnd: 38,
       issueDescription: 'Babysitting for Friday evening (4 hours).',
+      isClient: true,
       starterMessages: <String>[
         'Hello, I need babysitting on Friday evening.',
       ],
@@ -62,37 +68,63 @@ class ChatListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final AppLanguageController lang = AppLanguageController.instance;
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('${lang.tr('app_name')} chat'),
-        actions: const <Widget>[
-          ThemeToggleAction(),
-        ],
-      ),
-      body: ListView.separated(
-        itemCount: contacts.length,
-        separatorBuilder: (_, __) => const Divider(height: 0),
-        itemBuilder: (BuildContext context, int index) {
-          final ChatContact contact = contacts[index];
-          return ListTile(
-            leading: CircleAvatar(
-              backgroundImage: NetworkImage(contact.imageUrl),
-            ),
-            title: Text(contact.name),
-            subtitle: Text('${lang.trService(contact.service)} - ${contact.city}'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => ChatDetailPage(contact: contact),
+    return AnimatedBuilder(
+      animation: AppLanguageController.instance,
+      builder: (context, _) {
+        final AppLanguageController lang = AppLanguageController.instance;
+        final currentUser = StorageService.instance.getUser();
+
+        final filteredContacts = showClientsOnly
+            ? contacts.where((c) => c.isClient).toList()
+            : contacts;
+
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(showClientsOnly ? lang.tr('client_chats') : '${lang.tr('app_name')} ${lang.tr('chat')}'),
+            actions: const [
+              AppActions(),
+            ],
+          ),
+          body: ListView.separated(
+            itemCount: filteredContacts.length,
+            separatorBuilder: (_, __) => const Divider(height: 0),
+            itemBuilder: (BuildContext context, int index) {
+              final ChatContact contact = filteredContacts[index];
+
+              String lastMsg = lang.tr('no_messages_yet');
+              if (currentUser != null) {
+                final history = StorageService.instance.getChatHistory(currentUser.id, contact.name);
+                if (history.isNotEmpty) {
+                  lastMsg = history.last.text;
+                }
+              }
+
+              return ListTile(
+                leading: CircleAvatar(
+                  backgroundImage: NetworkImage(contact.imageUrl),
                 ),
+                title: Text(contact.name),
+                subtitle: Text(
+                  lastMsg,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ChatDetailPage(contact: contact),
+                    ),
+                  );
+                },
               );
             },
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }
+

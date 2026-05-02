@@ -8,6 +8,7 @@ class ServiceProvider {
   final double latitude;
   final double longitude;
   final List<String> availabilitySlots;
+  final bool isIdentityVerified;
 
   const ServiceProvider({
     required this.name,
@@ -19,6 +20,7 @@ class ServiceProvider {
     required this.latitude,
     required this.longitude,
     required this.availabilitySlots,
+    this.isIdentityVerified = true,
   });
 }
 

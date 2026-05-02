@@ -3,11 +3,19 @@ import 'dart:math';
 
 import 'package:animate_do/animate_do.dart';
 import 'package:day35/localization/app_language.dart';
+import 'package:day35/models/booking.dart';
 import 'package:day35/models/service.dart';
-import 'package:day35/pages/after_sales.dart';
+import 'package:day35/models/service_provider.dart';
 import 'package:day35/pages/chat_list.dart';
+import 'package:day35/pages/date_time.dart';
 import 'package:day35/pages/select_service.dart';
-import 'package:day35/theme/app_theme.dart';
+import 'package:day35/pages/service_subcategory_page.dart';
+import 'package:day35/pages/notifications_page.dart';
+import 'package:day35/pages/my_bookings_page.dart';
+import 'package:day35/pages/user_profile.dart';
+import 'package:day35/pages/onboarding_page.dart';
+import 'package:day35/services/storage_service.dart';
+import 'package:day35/widgets/app_actions.dart';
 import 'package:flutter/material.dart';
 
 class StartPage extends StatefulWidget {
@@ -38,8 +46,8 @@ class _StartPageState extends State<StartPage> {
 
   @override
   void initState() {
-    // Randomly select from service list every 2 seconds
     Timer.periodic(Duration(seconds: 2), (timer) { 
+      if (!mounted) return;
       setState(() {
         selectedService = Random().nextInt(services.length);
       });
@@ -51,13 +59,20 @@ class _StartPageState extends State<StartPage> {
   @override
   Widget build(BuildContext context) {
     final AppLanguageController lang = AppLanguageController.instance;
-    final AppThemeController theme = AppThemeController.instance;
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(
+        title: const Text('Serviny'),
         actions: [
           IconButton(
-            onPressed: theme.toggle,
-            icon: Icon(theme.isDarkMode ? Icons.dark_mode : Icons.light_mode),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const NotificationsPage()),
+              );
+            },
+            icon: const Icon(Icons.notifications_none),
           ),
           IconButton(
             onPressed: () {
@@ -70,37 +85,10 @@ class _StartPageState extends State<StartPage> {
             },
             icon: const Icon(Icons.chat_bubble_outline),
           ),
-          IconButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const AfterSalesPage(),
-                ),
-              );
-            },
-            icon: const Icon(Icons.verified_user_outlined),
-          ),
-          PopupMenuButton<AppLanguage>(
-            onSelected: lang.changeLanguage,
-            icon: const Icon(Icons.language),
-            itemBuilder: (BuildContext context) => [
-              PopupMenuItem(
-                value: AppLanguage.english,
-                child: Text(lang.tr('english')),
-              ),
-              PopupMenuItem(
-                value: AppLanguage.french,
-                child: Text(lang.tr('french')),
-              ),
-              PopupMenuItem(
-                value: AppLanguage.arabic,
-                child: Text(lang.tr('arabic')),
-              ),
-            ],
-          ),
+          const AppActions(),
         ],
       ),
+      drawer: _buildDrawer(context, colorScheme),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -147,6 +135,8 @@ class _StartPageState extends State<StartPage> {
               ),
             ),
             const SizedBox(height: 18),
+            _buildLiveBookingCard(lang),
+            const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 28),
               height: 260,
@@ -196,6 +186,15 @@ class _StartPageState extends State<StartPage> {
     final AppLanguageController lang = AppLanguageController.instance;
     return GestureDetector(
       onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ServiceSubCategoryPage(
+              serviceName: name,
+              serviceImage: image,
+            ),
+          ),
+        );
       },
       child: AnimatedContainer(
         duration: Duration(milliseconds: 500),
@@ -218,6 +217,182 @@ class _StartPageState extends State<StartPage> {
             Text(lang.trService(name), style: TextStyle(fontSize: 14),)
           ]
         ),
+      ),
+    );
+  }
+
+  Booking? get _latestBooking {
+    final bookings = BookingStore.instance.all;
+    if (bookings.isEmpty) return null;
+    return bookings.last;
+  }
+
+  Booking? get _latestPendingBooking {
+    final bookings = BookingStore.instance.all;
+    for (int i = bookings.length - 1; i >= 0; i--) {
+      if (bookings[i].status == BookingStatus.pending) return bookings[i];
+    }
+    return null;
+  }
+
+  Widget _buildLiveBookingCard(AppLanguageController lang) {
+    final Booking? pending = _latestPendingBooking;
+    final Booking? last = _latestBooking;
+    final Color primary = Theme.of(context).colorScheme.primary;
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: primary.withValues(alpha: 0.18)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.local_shipping_outlined, color: primary),
+              const SizedBox(width: 8),
+              Text(lang.tr('live_booking_status'), style: const TextStyle(fontWeight: FontWeight.w700)),
+            ],
+          ),
+          const SizedBox(height: 10),
+          if (pending != null) ...[
+            Text(
+              '${pending.serviceName} • ${pending.providerName}',
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
+            Text(
+              '${lang.tr('status_pending')} • ${pending.date} ${pending.time}',
+              style: TextStyle(color: Colors.grey.shade700),
+            ),
+            if ((pending.arrivalCode ?? '').isNotEmpty)
+              Text(
+                '${lang.tr('arrival_code')}: ${pending.arrivalCode}',
+                style: TextStyle(color: primary, fontWeight: FontWeight.w700),
+              ),
+          ] else
+            Text(lang.tr('no_active_booking'), style: TextStyle(color: Colors.grey.shade700)),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const MyBookingsPage()),
+                    );
+                  },
+                  child: Text(lang.tr('view_my_bookings')),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: last == null ? null : () => _quickRebook(last),
+                  child: Text(lang.tr('quick_rebook')),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _quickRebook(Booking last) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => DateAndTime(
+          serviceName: last.serviceName,
+          providerName: last.providerName,
+          providerCity: 'Nearby',
+          providerImageUrl: last.providerImageUrl,
+          basePriceTnd: last.price,
+          availabilitySlots: const <String>['Today 17:30', 'Tomorrow 09:00'],
+          extras: const <ServiceExtra>[
+            ServiceExtra(
+              name: 'Fast response',
+              imageUrl: 'https://img.icons8.com/color/2x/clock.png',
+              priceTnd: 10,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDrawer(BuildContext context, ColorScheme colorScheme) {
+    return Drawer(
+      child: Column(
+        children: [
+          UserAccountsDrawerHeader(
+            decoration: BoxDecoration(color: colorScheme.primary),
+            currentAccountPicture: const CircleAvatar(
+              backgroundImage: NetworkImage('https://uifaces.co/our-content/donated/NY9hnAbp.jpg'),
+            ),
+            accountName: const Text('Bacem Ben Salah', style: TextStyle(fontWeight: FontWeight.bold)),
+            accountEmail: const Text('bacem@email.com'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.person_outline),
+            title: const Text('My Profile'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const UserProfilePage()));
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.history),
+            title: const Text('My Bookings'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const MyBookingsPage()));
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.grid_view_rounded),
+            title: const Text('Available Services'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const SelectService()));
+            },
+          ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.settings_outlined),
+            title: const Text('Settings'),
+            onTap: () {
+              Navigator.pop(context);
+              // Placeholder for settings
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.help_outline),
+            title: const Text('Support'),
+            onTap: () {
+              Navigator.pop(context);
+            },
+          ),
+          const Spacer(),
+          ListTile(
+            leading: const Icon(Icons.logout, color: Colors.red),
+            title: const Text('Logout', style: TextStyle(color: Colors.red)),
+            onTap: () async {
+              await StorageService.instance.logout();
+              if (!context.mounted) return;
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const OnboardingPage()),
+                (route) => false,
+              );
+            },
+          ),
+          const SizedBox(height: 20),
+        ],
       ),
     );
   }

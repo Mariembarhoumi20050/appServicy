@@ -3,7 +3,7 @@ import 'package:day35/localization/app_language.dart';
 import 'package:day35/models/service_provider.dart';
 import 'package:day35/pages/chat_detail.dart';
 import 'package:day35/pages/date_time.dart';
-import 'package:day35/widgets/theme_toggle_action.dart';
+import 'package:day35/widgets/app_actions.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:speech_to_text/speech_to_text.dart';
@@ -287,7 +287,6 @@ class _ProviderSelectionPageState extends State<ProviderSelectionPage> {
       ];
 
   // ─── Langue active via ENUM ───────────────────────────────────────────────
-  // ✅ On utilise directement AppLanguage enum (pas de string 'fr'/'en'/'ar')
   AppLanguage get _lang => AppLanguageController.instance.current;
 
   bool get _isFr => _lang == AppLanguage.french;
@@ -493,7 +492,6 @@ class _ProviderSelectionPageState extends State<ProviderSelectionPage> {
     setState(() => _isListening = false);
 
     if (_spokenIsBook(spoken)) {
-      // ✅ stop TTS + délai avant navigation
       await _tts.speak(_ttsBooking(provider));
       await _tts.stop();
       await Future.delayed(const Duration(milliseconds: 400));
@@ -512,7 +510,6 @@ class _ProviderSelectionPageState extends State<ProviderSelectionPage> {
         ),
       ));
     } else if (_spokenIsChat(spoken)) {
-      // ✅ stop TTS + délai avant navigation
       await _tts.speak(_ttsOpenChat(provider));
       await _tts.stop();
       await Future.delayed(const Duration(milliseconds: 400));
@@ -547,173 +544,312 @@ class _ProviderSelectionPageState extends State<ProviderSelectionPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(lang.tr('choose_offerer')),
-        actions: const <Widget>[
-          ThemeToggleAction(),
+        actions: const [
+          AppActions(),
         ],
       ),
       body: Column(
         children: [
-          // Header service
-          ListTile(
-            leading: CircleAvatar(backgroundImage: NetworkImage(widget.serviceImage)),
-            title: Text(lang.trService(widget.serviceName)),
-            subtitle: Text(lang.tr('chat')),
-          ),
-
-          // Barre vocale
+          // Header service - Modernized
           Container(
-            margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: primary.withOpacity(0.08),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: primary.withOpacity(0.3)),
+              color: primary.withValues(alpha: 0.05),
+              border: Border(bottom: BorderSide(color: Colors.grey.withValues(alpha: 0.2))),
             ),
             child: Row(
               children: [
-                GestureDetector(
-                  onTap: _isListening ? null : _listenForProvider,
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    width: _isListening ? 54 : 46,
-                    height: _isListening ? 54 : 46,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: _isListening ? Colors.red : primary,
-                    ),
-                    child: Icon(
-                      _isListening ? Icons.mic : Icons.mic_none,
-                      color: Colors.white, size: 24,
-                    ),
+                Hero(
+                  tag: 'service_${widget.serviceName}',
+                  child: CircleAvatar(
+                    radius: 30,
+                    backgroundColor: primary.withValues(alpha: 0.1),
+                    backgroundImage: NetworkImage(widget.serviceImage),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 16),
                 Expanded(
-                  child: Text(
-                    _voiceStatus,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: _isListening ? Colors.red : primary,
-                      fontWeight: FontWeight.w500,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        lang.trService(widget.serviceName),
+                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        '${providers.length} ${lang.tr('available_specialists')}',
+                        style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
 
-          // Liste des prestataires
+          // Barre vocale - Enhanced
+          Container(
+            margin: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                GestureDetector(
+                  onTap: _isListening ? null : _listenForProvider,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      if (_isListening)
+                        const SizedBox(
+                          width: 50,
+                          height: 50,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      Container(
+                        width: 42,
+                        height: 42,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                            colors: _isListening 
+                              ? [Colors.red, Colors.redAccent] 
+                              : [primary, primary.withValues(alpha: 0.8)],
+                          ),
+                        ),
+                        child: Icon(
+                          _isListening ? Icons.mic : Icons.mic_none_rounded,
+                          color: Colors.white, size: 22,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        _isListening ? 'Listening...' : 'Voice Assistant',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: _isListening ? Colors.red : primary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        _voiceStatus,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Liste des prestataires - Redesigned for realism
           Expanded(
             child: ListView.builder(
+              padding: const EdgeInsets.only(bottom: 20),
               itemCount: _sortedProviders.length,
               itemBuilder: (context, index) {
                 final provider = _sortedProviders[index];
                 final isSelected = _selectedProvider?.name == provider.name;
-                return Card(
-                  margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    side: isSelected
-                        ? BorderSide(color: primary, width: 2)
-                        : BorderSide.none,
+                final double dist = _distanceKm(provider);
+                
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).cardColor,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(
+                      color: isSelected ? primary : Colors.transparent,
+                      width: 2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 12,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
                   ),
-                  color: isSelected ? primary.withOpacity(0.07) : null,
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(24),
                     child: Column(
                       children: [
-                        Row(
-                          children: [
-                            CircleAvatar(
-                              radius: 22,
-                              backgroundImage: NetworkImage(provider.imageUrl),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                        Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Stack(
                                 children: [
-                                  Text(provider.name,
-                                      style: const TextStyle(fontWeight: FontWeight.bold)),
-                                  Text(
-                                    _userPosition == null
-                                        ? '${provider.city} — ⭐ ${provider.rating}'
-                                        : '${provider.city} — ${_distanceKm(provider).toStringAsFixed(1)} km',
+                                  CircleAvatar(
+                                    radius: 32,
+                                    backgroundImage: NetworkImage(provider.imageUrl),
                                   ),
-                                  Text(
-                                    'Next slot: ${provider.availabilitySlots.first}',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Theme.of(context)
-                                          .textTheme
-                                          .bodyMedium
-                                          ?.color
-                                          ?.withOpacity(0.75),
+                                  Positioned(
+                                    right: 0,
+                                    bottom: 0,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(2),
+                                      decoration: const BoxDecoration(
+                                        color: Colors.white,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(Icons.verified, color: Colors.blue, size: 20),
                                     ),
                                   ),
                                 ],
                               ),
-                            ),
-                            Text('${provider.basePriceTnd} TND',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold, color: primary)),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        Row(
-                          children: [
-                            // ✅ CHAT button — stop TTS + délai avant navigation
-                            Expanded(
-                              child: OutlinedButton.icon(
-                                onPressed: () async {
-                                  await _tts.stop();
-                                  await Future.delayed(const Duration(milliseconds: 200));
-                                  if (!mounted) return;
-                                  Navigator.push(context, MaterialPageRoute(
-                                    builder: (_) => ChatDetailPage(
-                                      contact: ChatContact(
-                                        name: provider.name,
-                                        service: widget.serviceName,
-                                        city: provider.city,
-                                        imageUrl: provider.imageUrl,
-                                        quotedPriceTnd: provider.basePriceTnd + 10,
-                                        minNegotiablePriceTnd: (provider.basePriceTnd * 0.85).round(),
-                                        issueDescription: 'Need ${widget.serviceName.toLowerCase()} service near ${provider.city}.',
-                                        starterMessages: provider.starterMessages,
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          provider.name,
+                                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
+                                        ),
+                                        Text(
+                                          '${provider.basePriceTnd} TND',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w900, 
+                                            color: primary,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Row(
+                                      children: [
+                                        Icon(Icons.location_on_rounded, size: 14, color: Colors.grey.shade500),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          _userPosition == null ? provider.city : '${provider.city} • ${dist.toStringAsFixed(1)} km',
+                                          style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Icon(Icons.star_rounded, size: 16, color: Colors.amber.shade700),
+                                        const SizedBox(width: 2),
+                                        Text(
+                                          provider.rating.toString(),
+                                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: Colors.green.withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Text(
+                                        'Next: ${provider.availabilitySlots.first}',
+                                        style: const TextStyle(
+                                          fontSize: 11,
+                                          color: Colors.green,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                     ),
-                                  ));
-                                },
-                                icon: const Icon(Icons.chat_bubble_outline),
-                                label: Text(lang.tr('chat')),
+                                  ],
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 10),
-                            // ✅ BOOK button — stop TTS + délai avant navigation
-                            Expanded(
-                              child: ElevatedButton.icon(
-                                onPressed: () async {
-                                  await _tts.stop();
-                                  await Future.delayed(const Duration(milliseconds: 200));
-                                  if (!mounted) return;
-                                  Navigator.push(context, MaterialPageRoute(
-                                    builder: (_) => DateAndTime(
-                                      serviceName: widget.serviceName,
-                                      providerName: provider.name,
-                                      providerCity: provider.city,
-                                      providerImageUrl: provider.imageUrl,
-                                      basePriceTnd: provider.basePriceTnd,
-                                      distanceKm: _userPosition == null ? null : _distanceKm(provider),
-                                      availabilitySlots: provider.availabilitySlots,
-                                      extras: extras,
-                                    ),
-                                  ));
-                                },
-                                icon: const Icon(Icons.calendar_month),
-                                label: Text(lang.tr('book')),
+                            ],
+                          ),
+                        ),
+                        Divider(height: 1, color: Colors.grey.withValues(alpha: 0.1)),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: TextButton.icon(
+                                  onPressed: () async {
+                                    await _tts.stop();
+                                    await Future.delayed(const Duration(milliseconds: 200));
+                                    if (!mounted) return;
+                                    Navigator.push(context, MaterialPageRoute(
+                                      builder: (_) => ChatDetailPage(
+                                        contact: ChatContact(
+                                          name: provider.name,
+                                          service: widget.serviceName,
+                                          city: provider.city,
+                                          imageUrl: provider.imageUrl,
+                                          quotedPriceTnd: provider.basePriceTnd + 10,
+                                          minNegotiablePriceTnd: (provider.basePriceTnd * 0.85).round(),
+                                          issueDescription: 'Need ${widget.serviceName.toLowerCase()} service near ${provider.city}.',
+                                          starterMessages: provider.starterMessages,
+                                        ),
+                                      ),
+                                    ));
+                                  },
+                                  icon: const Icon(Icons.chat_bubble_outline_rounded, size: 18),
+                                  label: Text(lang.tr('chat')),
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: primary,
+                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                  ),
+                                ),
                               ),
-                            ),
-                          ],
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: ElevatedButton.icon(
+                                  onPressed: () async {
+                                    await _tts.stop();
+                                    await Future.delayed(const Duration(milliseconds: 200));
+                                    if (!mounted) return;
+                                    Navigator.push(context, MaterialPageRoute(
+                                      builder: (_) => DateAndTime(
+                                        serviceName: widget.serviceName,
+                                        providerName: provider.name,
+                                        providerCity: provider.city,
+                                        providerImageUrl: provider.imageUrl,
+                                        basePriceTnd: provider.basePriceTnd,
+                                        distanceKm: _userPosition == null ? null : dist,
+                                        availabilitySlots: provider.availabilitySlots,
+                                        extras: extras,
+                                      ),
+                                    ));
+                                  },
+                                  icon: const Icon(Icons.calendar_month_rounded, size: 18),
+                                  label: Text(lang.tr('book')),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: primary,
+                                    foregroundColor: Colors.white,
+                                    elevation: 0,
+                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -722,24 +858,30 @@ class _ProviderSelectionPageState extends State<ProviderSelectionPage> {
               },
             ),
           ),
+          
+          // Location Info Footer
           if (_isLocating || _userPosition != null)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(14, 0, 14, 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              decoration: BoxDecoration(
+                color: primary.withValues(alpha: 0.05),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              ),
               child: Row(
                 children: [
                   Icon(
-                    Icons.my_location_outlined,
-                    size: 16,
+                    _isLocating ? Icons.sync : Icons.location_on_rounded,
+                    size: 18,
                     color: primary,
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       _isLocating
-                          ? 'Detecting your location...'
-                          : 'Providers are sorted by nearest to your location.',
+                          ? 'Locating you for better results...'
+                          : 'Showing specialists near your location.',
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 13,
                         color: primary,
                         fontWeight: FontWeight.w600,
                       ),

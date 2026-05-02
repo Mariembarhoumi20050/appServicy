@@ -1,5 +1,34 @@
 import 'package:flutter/material.dart';
 
+class CompetitionTokens {
+  static const double radiusSm = 12;
+  static const double radiusMd = 16;
+  static const double radiusLg = 20;
+  static const double pagePadding = 20;
+  static const double sectionGap = 20;
+
+  static List<BoxShadow> softShadow(Color color) {
+    return <BoxShadow>[
+      BoxShadow(
+        color: color.withValues(alpha: 0.08),
+        blurRadius: 14,
+        offset: const Offset(0, 5),
+      ),
+    ];
+  }
+
+  static LinearGradient heroGradient(Color color) {
+    return LinearGradient(
+      colors: <Color>[
+        color.withValues(alpha: 0.95),
+        color.withValues(alpha: 0.72),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    );
+  }
+}
+
 class AppThemeController extends ChangeNotifier {
   static final AppThemeController instance = AppThemeController._();
 
