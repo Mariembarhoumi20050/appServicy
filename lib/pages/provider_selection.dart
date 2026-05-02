@@ -3,7 +3,9 @@ import 'package:day35/localization/app_language.dart';
 import 'package:day35/models/service_provider.dart';
 import 'package:day35/pages/chat_detail.dart';
 import 'package:day35/pages/date_time.dart';
+import 'package:day35/widgets/theme_toggle_action.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
@@ -27,6 +29,8 @@ class _ProviderSelectionPageState extends State<ProviderSelectionPage> {
   bool _isListening = false;
   String _voiceStatus = '';
   ServiceProvider? _selectedProvider;
+  Position? _userPosition;
+  bool _isLocating = false;
 
   // ─── Providers ────────────────────────────────────────────────────────────
   static final Map<String, List<ServiceProvider>> _providersByService = {
@@ -38,6 +42,9 @@ class _ProviderSelectionPageState extends State<ProviderSelectionPage> {
         rating: 4.9,
         basePriceTnd: 55,
         starterMessages: ['Salem Yassine, I need apartment cleaning.'],
+        latitude: 36.8065,
+        longitude: 10.1815,
+        availabilitySlots: ['Today 17:30', 'Tomorrow 09:00', 'Tomorrow 14:30'],
       ),
       ServiceProvider(
         name: 'Rym Triki',
@@ -46,6 +53,31 @@ class _ProviderSelectionPageState extends State<ProviderSelectionPage> {
         rating: 4.7,
         basePriceTnd: 60,
         starterMessages: ['Hello, do you bring your own products?'],
+        latitude: 36.8782,
+        longitude: 10.3247,
+        availabilitySlots: ['Today 18:00', 'Tomorrow 10:30', 'Fri 15:00'],
+      ),
+      ServiceProvider(
+        name: 'Meriem Gharbi',
+        city: 'Ariana',
+        imageUrl: 'https://i.pravatar.cc/150?img=41',
+        rating: 4.8,
+        basePriceTnd: 58,
+        starterMessages: ['Hi Meriem, can you clean my kitchen and salon?'],
+        latitude: 36.8665,
+        longitude: 10.1647,
+        availabilitySlots: ['Today 16:45', 'Tomorrow 11:00', 'Sat 09:30'],
+      ),
+      ServiceProvider(
+        name: 'Ines Chatti',
+        city: 'Sousse',
+        imageUrl: 'https://i.pravatar.cc/150?img=20',
+        rating: 4.6,
+        basePriceTnd: 52,
+        starterMessages: ['Salem Ines, I need a deep cleaning this weekend.'],
+        latitude: 35.8256,
+        longitude: 10.6084,
+        availabilitySlots: ['Tomorrow 08:30', 'Tomorrow 17:00', 'Sun 10:00'],
       ),
     ],
     'Plumber': const [
@@ -56,6 +88,9 @@ class _ProviderSelectionPageState extends State<ProviderSelectionPage> {
         rating: 4.8,
         basePriceTnd: 70,
         starterMessages: ['Salem, I have a leaking pipe in kitchen.'],
+        latitude: 34.7406,
+        longitude: 10.7603,
+        availabilitySlots: ['Today 19:00', 'Tomorrow 08:00', 'Fri 13:30'],
       ),
       ServiceProvider(
         name: 'Seif Chatti',
@@ -64,6 +99,125 @@ class _ProviderSelectionPageState extends State<ProviderSelectionPage> {
         rating: 4.6,
         basePriceTnd: 65,
         starterMessages: ['Can you come this evening please?'],
+        latitude: 35.8256,
+        longitude: 10.6084,
+        availabilitySlots: ['Today 18:30', 'Tomorrow 10:00', 'Sat 16:00'],
+      ),
+      ServiceProvider(
+        name: 'Mohamed Ben Hmida',
+        city: 'Tunis',
+        imageUrl: 'https://i.pravatar.cc/150?img=53',
+        rating: 4.7,
+        basePriceTnd: 68,
+        starterMessages: ['My bathroom sink is blocked, can you help?'],
+        latitude: 36.8065,
+        longitude: 10.1815,
+        availabilitySlots: ['Today 20:00', 'Tomorrow 09:15', 'Sun 11:00'],
+      ),
+      ServiceProvider(
+        name: 'Wael Jebali',
+        city: 'Nabeul',
+        imageUrl: 'https://i.pravatar.cc/150?img=64',
+        rating: 4.5,
+        basePriceTnd: 62,
+        starterMessages: ['Need leak repair urgently in my apartment.'],
+        latitude: 36.4510,
+        longitude: 10.7357,
+        availabilitySlots: ['Tomorrow 07:45', 'Tomorrow 14:00', 'Mon 10:30'],
+      ),
+    ],
+    'Electrician': const [
+      ServiceProvider(
+        name: 'Ahmed Karray',
+        city: 'Tunis',
+        imageUrl: 'https://i.pravatar.cc/150?img=55',
+        rating: 4.9,
+        basePriceTnd: 72,
+        starterMessages: ['I need to fix frequent power cuts in one room.'],
+        latitude: 36.8189,
+        longitude: 10.1658,
+        availabilitySlots: ['Today 17:00', 'Tomorrow 08:30', 'Fri 12:00'],
+      ),
+      ServiceProvider(
+        name: 'Sami Ayari',
+        city: 'Monastir',
+        imageUrl: 'https://i.pravatar.cc/150?img=22',
+        rating: 4.6,
+        basePriceTnd: 64,
+        starterMessages: ['Can you install new LED lights tomorrow?'],
+        latitude: 35.7779,
+        longitude: 10.8262,
+        availabilitySlots: ['Tomorrow 10:00', 'Tomorrow 18:30', 'Sat 09:00'],
+      ),
+      ServiceProvider(
+        name: 'Chahinez Ben Amor',
+        city: 'Sfax',
+        imageUrl: 'https://i.pravatar.cc/150?img=39',
+        rating: 4.8,
+        basePriceTnd: 70,
+        starterMessages: ['Need help with electrical socket replacement.'],
+        latitude: 34.7406,
+        longitude: 10.7603,
+        availabilitySlots: ['Today 16:30', 'Tomorrow 12:00', 'Sun 15:30'],
+      ),
+    ],
+    'AC Repair': const [
+      ServiceProvider(
+        name: 'Walid Gharbi',
+        city: 'Sousse',
+        imageUrl: 'https://i.pravatar.cc/150?img=31',
+        rating: 4.8,
+        basePriceTnd: 80,
+        starterMessages: ['My AC is not cooling well, can you check it?'],
+        latitude: 35.8256,
+        longitude: 10.6084,
+        availabilitySlots: ['Today 18:45', 'Tomorrow 09:00', 'Sat 13:00'],
+      ),
+      ServiceProvider(
+        name: 'Hichem Mzoughi',
+        city: 'Tunis',
+        imageUrl: 'https://i.pravatar.cc/150?img=61',
+        rating: 4.7,
+        basePriceTnd: 75,
+        starterMessages: ['Need AC maintenance before summer season.'],
+        latitude: 36.8065,
+        longitude: 10.1815,
+        availabilitySlots: ['Today 17:15', 'Tomorrow 11:30', 'Fri 14:45'],
+      ),
+      ServiceProvider(
+        name: 'Yosra Dridi',
+        city: 'Gabes',
+        imageUrl: 'https://i.pravatar.cc/150?img=26',
+        rating: 4.5,
+        basePriceTnd: 73,
+        starterMessages: ['AC has noisy fan and weak airflow.'],
+        latitude: 33.8815,
+        longitude: 10.0982,
+        availabilitySlots: ['Tomorrow 09:45', 'Tomorrow 16:30', 'Mon 08:30'],
+      ),
+    ],
+    'Painter': const [
+      ServiceProvider(
+        name: 'Riadh Bouazizi',
+        city: 'Bizerte',
+        imageUrl: 'https://i.pravatar.cc/150?img=57',
+        rating: 4.7,
+        basePriceTnd: 85,
+        starterMessages: ['Need full repaint for 2-bedroom apartment.'],
+        latitude: 37.2744,
+        longitude: 9.8739,
+        availabilitySlots: ['Tomorrow 08:00', 'Fri 10:30', 'Sun 09:30'],
+      ),
+      ServiceProvider(
+        name: 'Olfa Khlifi',
+        city: 'Tunis',
+        imageUrl: 'https://i.pravatar.cc/150?img=28',
+        rating: 4.6,
+        basePriceTnd: 78,
+        starterMessages: ['Can you refresh wall paint in my living room?'],
+        latitude: 36.8065,
+        longitude: 10.1815,
+        availabilitySlots: ['Today 19:30', 'Tomorrow 13:00', 'Sat 10:15'],
       ),
     ],
   };
@@ -76,6 +230,9 @@ class _ProviderSelectionPageState extends State<ProviderSelectionPage> {
       rating: 4.8,
       basePriceTnd: 50,
       starterMessages: ['Salem, can we discuss the price?'],
+      latitude: 36.8065,
+      longitude: 10.1815,
+      availabilitySlots: ['Today 17:30', 'Tomorrow 09:30', 'Fri 11:00'],
     ),
     ServiceProvider(
       name: 'Amira Jlassi',
@@ -84,6 +241,9 @@ class _ProviderSelectionPageState extends State<ProviderSelectionPage> {
       rating: 4.7,
       basePriceTnd: 55,
       starterMessages: ['Are you available tomorrow afternoon?'],
+      latitude: 36.4510,
+      longitude: 10.7357,
+      availabilitySlots: ['Tomorrow 14:30', 'Sat 09:00', 'Mon 16:00'],
     ),
   ];
 
@@ -105,6 +265,19 @@ class _ProviderSelectionPageState extends State<ProviderSelectionPage> {
 
   List<ServiceProvider> get providers =>
       _providersByService[widget.serviceName] ?? _defaultProviders;
+
+  List<ServiceProvider> get _sortedProviders {
+    if (_userPosition == null) {
+      return providers;
+    }
+    final List<ServiceProvider> sorted = List<ServiceProvider>.from(providers);
+    sorted.sort((ServiceProvider a, ServiceProvider b) {
+      final double da = _distanceKm(a);
+      final double db = _distanceKm(b);
+      return da.compareTo(db);
+    });
+    return sorted;
+  }
 
   List<ServiceExtra> get extras =>
       _extrasByService[widget.serviceName] ??
@@ -216,8 +389,49 @@ class _ProviderSelectionPageState extends State<ProviderSelectionPage> {
     super.initState();
     _speech.initialize();
     _setupTts();
+    _detectLocation();
     _voiceStatus = _ttsTapMic();
     Future.delayed(const Duration(milliseconds: 600), _announceProviders);
+  }
+
+  Future<void> _detectLocation() async {
+    setState(() => _isLocating = true);
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        return;
+      }
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        return;
+      }
+      final Position position = await Geolocator.getCurrentPosition();
+      if (!mounted) return;
+      setState(() => _userPosition = position);
+    } catch (_) {
+      // Keep manual city listing if location cannot be resolved.
+    } finally {
+      if (mounted) {
+        setState(() => _isLocating = false);
+      }
+    }
+  }
+
+  double _distanceKm(ServiceProvider provider) {
+    if (_userPosition == null) {
+      return 0;
+    }
+    final double meters = Geolocator.distanceBetween(
+      _userPosition!.latitude,
+      _userPosition!.longitude,
+      provider.latitude,
+      provider.longitude,
+    );
+    return meters / 1000;
   }
 
   // ─── Étape 1 : annonce les prestataires ───────────────────────────────────
@@ -289,7 +503,11 @@ class _ProviderSelectionPageState extends State<ProviderSelectionPage> {
         builder: (_) => DateAndTime(
           serviceName: widget.serviceName,
           providerName: provider.name,
+          providerCity: provider.city,
+          providerImageUrl: provider.imageUrl,
           basePriceTnd: provider.basePriceTnd,
+          distanceKm: _userPosition == null ? null : _distanceKm(provider),
+          availabilitySlots: provider.availabilitySlots,
           extras: extras,
         ),
       ));
@@ -307,6 +525,9 @@ class _ProviderSelectionPageState extends State<ProviderSelectionPage> {
             service: widget.serviceName,
             city: provider.city,
             imageUrl: provider.imageUrl,
+            quotedPriceTnd: provider.basePriceTnd + 10,
+            minNegotiablePriceTnd: (provider.basePriceTnd * 0.85).round(),
+            issueDescription: 'Need ${widget.serviceName.toLowerCase()} service near ${provider.city}.',
             starterMessages: provider.starterMessages,
           ),
         ),
@@ -324,7 +545,12 @@ class _ProviderSelectionPageState extends State<ProviderSelectionPage> {
     final Color primary = Theme.of(context).colorScheme.primary;
 
     return Scaffold(
-      appBar: AppBar(title: Text(lang.tr('choose_offerer'))),
+      appBar: AppBar(
+        title: Text(lang.tr('choose_offerer')),
+        actions: const <Widget>[
+          ThemeToggleAction(),
+        ],
+      ),
       body: Column(
         children: [
           // Header service
@@ -379,9 +605,9 @@ class _ProviderSelectionPageState extends State<ProviderSelectionPage> {
           // Liste des prestataires
           Expanded(
             child: ListView.builder(
-              itemCount: providers.length,
+              itemCount: _sortedProviders.length,
               itemBuilder: (context, index) {
-                final provider = providers[index];
+                final provider = _sortedProviders[index];
                 final isSelected = _selectedProvider?.name == provider.name;
                 return Card(
                   margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -409,7 +635,22 @@ class _ProviderSelectionPageState extends State<ProviderSelectionPage> {
                                 children: [
                                   Text(provider.name,
                                       style: const TextStyle(fontWeight: FontWeight.bold)),
-                                  Text('${provider.city} — ⭐ ${provider.rating}'),
+                                  Text(
+                                    _userPosition == null
+                                        ? '${provider.city} — ⭐ ${provider.rating}'
+                                        : '${provider.city} — ${_distanceKm(provider).toStringAsFixed(1)} km',
+                                  ),
+                                  Text(
+                                    'Next slot: ${provider.availabilitySlots.first}',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.color
+                                          ?.withOpacity(0.75),
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
@@ -435,6 +676,9 @@ class _ProviderSelectionPageState extends State<ProviderSelectionPage> {
                                         service: widget.serviceName,
                                         city: provider.city,
                                         imageUrl: provider.imageUrl,
+                                        quotedPriceTnd: provider.basePriceTnd + 10,
+                                        minNegotiablePriceTnd: (provider.basePriceTnd * 0.85).round(),
+                                        issueDescription: 'Need ${widget.serviceName.toLowerCase()} service near ${provider.city}.',
                                         starterMessages: provider.starterMessages,
                                       ),
                                     ),
@@ -456,7 +700,11 @@ class _ProviderSelectionPageState extends State<ProviderSelectionPage> {
                                     builder: (_) => DateAndTime(
                                       serviceName: widget.serviceName,
                                       providerName: provider.name,
+                                      providerCity: provider.city,
+                                      providerImageUrl: provider.imageUrl,
                                       basePriceTnd: provider.basePriceTnd,
+                                      distanceKm: _userPosition == null ? null : _distanceKm(provider),
+                                      availabilitySlots: provider.availabilitySlots,
                                       extras: extras,
                                     ),
                                   ));
@@ -474,6 +722,32 @@ class _ProviderSelectionPageState extends State<ProviderSelectionPage> {
               },
             ),
           ),
+          if (_isLocating || _userPosition != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 0, 14, 10),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.my_location_outlined,
+                    size: 16,
+                    color: primary,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      _isLocating
+                          ? 'Detecting your location...'
+                          : 'Providers are sorted by nearest to your location.',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
         ],
       ),
     );

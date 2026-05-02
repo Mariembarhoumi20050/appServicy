@@ -9,7 +9,9 @@ import 'package:day35/pages/chat_list.dart';
 import 'package:day35/pages/date_time.dart';
 import 'package:day35/pages/offerer_profile.dart';
 import 'package:day35/pages/user_profile.dart';
+import 'package:day35/widgets/theme_toggle_action.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({ Key? key }) : super(key: key);
@@ -19,6 +21,9 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  Position? _userPosition;
+  bool _isLocating = false;
+
   List<Service> services = [
     Service('Cleaning', 'https://img.icons8.com/external-vitaliy-gorbachev-flat-vitaly-gorbachev/2x/external-cleaning-labour-day-vitaliy-gorbachev-flat-vitaly-gorbachev.png'),
     Service('Plumber', 'https://img.icons8.com/external-vitaliy-gorbachev-flat-vitaly-gorbachev/2x/external-plumber-labour-day-vitaliy-gorbachev-flat-vitaly-gorbachev.png'),
@@ -41,6 +46,8 @@ class _HomePageState extends State<HomePage> {
           'https://images.unsplash.com/photo-1506803682981-6e718a9dd3ee?ixlib=rb-0.3.5&q=80&fm=jpg&crop=faces&fit=crop&h=200&w=200&s=c3a31eeb7efb4d533647e3cad1de9257',
       'rating': 4.8,
       'basePrice': 70,
+      'lat': 36.8065,
+      'lng': 10.1815,
     },
     {
       'name': 'Michelle Baldwin',
@@ -49,6 +56,8 @@ class _HomePageState extends State<HomePage> {
       'image': 'https://uifaces.co/our-content/donated/oLkb60i_.jpg',
       'rating': 4.6,
       'basePrice': 55,
+      'lat': 34.7406,
+      'lng': 10.7603,
     },
     {
       'name': 'Brenon Kalu',
@@ -57,8 +66,154 @@ class _HomePageState extends State<HomePage> {
       'image': 'https://uifaces.co/our-content/donated/VUMBKh1U.jpg',
       'rating': 4.4,
       'basePrice': 65,
-    }
+      'lat': 35.8256,
+      'lng': 10.6084,
+    },
+    {
+      'name': 'Ahmed Karray',
+      'service': 'Electrician',
+      'city': 'Tunis',
+      'image': 'https://i.pravatar.cc/150?img=55',
+      'rating': 4.9,
+      'basePrice': 72,
+      'lat': 36.8189,
+      'lng': 10.1658,
+    },
+    {
+      'name': 'Meriem Gharbi',
+      'service': 'Cleaning',
+      'city': 'Ariana',
+      'image': 'https://i.pravatar.cc/150?img=41',
+      'rating': 4.8,
+      'basePrice': 58,
+      'lat': 36.8665,
+      'lng': 10.1647,
+    },
+    {
+      'name': 'Hichem Mzoughi',
+      'service': 'AC Repair',
+      'city': 'Tunis',
+      'image': 'https://i.pravatar.cc/150?img=61',
+      'rating': 4.7,
+      'basePrice': 75,
+      'lat': 36.8065,
+      'lng': 10.1815,
+    },
+    {
+      'name': 'Olfa Khlifi',
+      'service': 'Painter',
+      'city': 'Tunis',
+      'image': 'https://i.pravatar.cc/150?img=28',
+      'rating': 4.6,
+      'basePrice': 78,
+      'lat': 36.8065,
+      'lng': 10.1815,
+    },
+    {
+      'name': 'Sami Ayari',
+      'service': 'Electrician',
+      'city': 'Monastir',
+      'image': 'https://i.pravatar.cc/150?img=22',
+      'rating': 4.6,
+      'basePrice': 64,
+      'lat': 35.7779,
+      'lng': 10.8262,
+    },
+    {
+      'name': 'Wael Jebali',
+      'service': 'Plumber',
+      'city': 'Nabeul',
+      'image': 'https://i.pravatar.cc/150?img=64',
+      'rating': 4.5,
+      'basePrice': 62,
+      'lat': 36.4510,
+      'lng': 10.7357,
+    },
+    {
+      'name': 'Yosra Dridi',
+      'service': 'AC Repair',
+      'city': 'Gabes',
+      'image': 'https://i.pravatar.cc/150?img=26',
+      'rating': 4.5,
+      'basePrice': 73,
+      'lat': 33.8815,
+      'lng': 10.0982,
+    },
+    {
+      'name': 'Riadh Bouazizi',
+      'service': 'Painter',
+      'city': 'Bizerte',
+      'image': 'https://i.pravatar.cc/150?img=57',
+      'rating': 4.7,
+      'basePrice': 85,
+      'lat': 37.2744,
+      'lng': 9.8739,
+    },
+    {
+      'name': 'Ines Chatti',
+      'service': 'Cleaning',
+      'city': 'Sousse',
+      'image': 'https://i.pravatar.cc/150?img=20',
+      'rating': 4.6,
+      'basePrice': 52,
+      'lat': 35.8256,
+      'lng': 10.6084,
+    },
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _detectLocation();
+  }
+
+  Future<void> _detectLocation() async {
+    setState(() => _isLocating = true);
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) return;
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        return;
+      }
+      final Position position = await Geolocator.getCurrentPosition();
+      if (!mounted) return;
+      setState(() => _userPosition = position);
+    } catch (_) {
+      // Keep default order if location can't be resolved.
+    } finally {
+      if (mounted) {
+        setState(() => _isLocating = false);
+      }
+    }
+  }
+
+  double _workerDistanceKm(Map<String, dynamic> worker) {
+    if (_userPosition == null) return 0;
+    final double meters = Geolocator.distanceBetween(
+      _userPosition!.latitude,
+      _userPosition!.longitude,
+      worker['lat'] as double,
+      worker['lng'] as double,
+    );
+    return meters / 1000;
+  }
+
+  List<Map<String, dynamic>> get _sortedWorkers {
+    final List<Map<String, dynamic>> sorted =
+        List<Map<String, dynamic>>.from(workers);
+    if (_userPosition == null) {
+      return sorted;
+    }
+    sorted.sort((Map<String, dynamic> a, Map<String, dynamic> b) {
+      return _workerDistanceKm(a).compareTo(_workerDistanceKm(b));
+    });
+    return sorted;
+  }
   
   @override
   Widget build(BuildContext context) {
@@ -68,6 +223,7 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: Text(lang.tr('app_name')),
         actions: [
+          const ThemeToggleAction(),
           IconButton(
             onPressed: () {
               Navigator.push(
@@ -128,7 +284,7 @@ class _HomePageState extends State<HomePage> {
                   borderRadius: BorderRadius.circular(20.0),
                   boxShadow: [
                     BoxShadow(
-                        color: Colors.black.withOpacity(0.08),
+                        color: Colors.black.withValues(alpha: 0.08),
                       offset: Offset(0, 4),
                       blurRadius: 10.0,
                     ),
@@ -150,7 +306,7 @@ class _HomePageState extends State<HomePage> {
                           children: [
                             Text("Isabel Kirkland", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),),
                             SizedBox(height: 5,),
-                            Text("Cleaner", style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7), fontSize: 18),),
+                            Text("Cleaner", style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7), fontSize: 18),),
                           ],
                         )
                       ],
@@ -207,7 +363,7 @@ class _HomePageState extends State<HomePage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Top Rated', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),),
+                  Text('Services near you', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),),
                   TextButton(
                     onPressed: () {}, 
                     child: Text('View all',)
@@ -220,15 +376,37 @@ class _HomePageState extends State<HomePage> {
               child: ListView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: workers.length,
+                itemCount: _sortedWorkers.length,
                 itemBuilder: (BuildContext context, int index) {
                   return FadeInUp(
                     delay: Duration(milliseconds: 500 * index),
-                    child: workerContainer(workers[index], index),
+                    child: workerContainer(_sortedWorkers[index], index),
                   );
                 }
               ),
             ),
+            if (_isLocating || _userPosition != null)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  children: [
+                    Icon(Icons.location_on_outlined, size: 16, color: primary),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        _isLocating
+                            ? 'Detecting your location...'
+                            : 'Workers are sorted by distance from your location.',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: primary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             SizedBox(height: 150,),
           ]
         )
@@ -243,9 +421,9 @@ class _HomePageState extends State<HomePage> {
         margin: EdgeInsets.only(right: 20),
         padding: EdgeInsets.all(10.0),
         decoration: BoxDecoration(
-          color: Theme.of(context).cardColor.withOpacity(0.8),
+          color: Theme.of(context).cardColor.withValues(alpha: 0.8),
           border: Border.all(
-            color: Theme.of(context).colorScheme.primary.withOpacity(0),
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0),
             width: 2.0,
           ),
           borderRadius: BorderRadius.circular(20.0),
@@ -270,6 +448,9 @@ class _HomePageState extends State<HomePage> {
     final String image = worker['image'] as String;
     final double rating = worker['rating'] as double;
     final int basePrice = worker['basePrice'] as int;
+    final String cityOrDistance = _userPosition == null
+        ? city
+        : '${_workerDistanceKm(worker).toStringAsFixed(1)} km away';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
@@ -290,7 +471,7 @@ class _HomePageState extends State<HomePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                    Text('${lang.trService(service)} - $city'),
+                    Text('${lang.trService(service)} - $cityOrDistance'),
                     const SizedBox(height: 4),
                     Row(
                       children: List.generate(5, (int starIndex) {
@@ -322,6 +503,9 @@ class _HomePageState extends State<HomePage> {
                             service: service,
                             city: city,
                             imageUrl: image,
+                            quotedPriceTnd: basePrice + 10,
+                            minNegotiablePriceTnd: (basePrice * 0.85).round(),
+                            issueDescription: 'Need ${service.toLowerCase()} in $city.',
                             starterMessages: <String>[
                               'Salem $name, can we discuss details before booking?'
                             ],
@@ -344,7 +528,17 @@ class _HomePageState extends State<HomePage> {
                         builder: (_) => DateAndTime(
                           serviceName: service,
                           providerName: name,
+                          providerCity: city,
+                          providerImageUrl: image,
                           basePriceTnd: basePrice,
+                          distanceKm: _userPosition == null
+                              ? null
+                              : _workerDistanceKm(worker),
+                          availabilitySlots: const <String>[
+                            'Today 17:30',
+                            'Tomorrow 09:00',
+                            'Tomorrow 14:30',
+                          ],
                           extras: const <ServiceExtra>[
                             ServiceExtra(
                               name: 'Fast response',
@@ -378,7 +572,13 @@ class _HomePageState extends State<HomePage> {
                       rating: rating,
                       onRatingUpdated: (double updatedRating) {
                         setState(() {
-                          workers[index]['rating'] = updatedRating;
+                          final int sourceIndex = workers.indexWhere(
+                            (Map<String, dynamic> item) =>
+                                item['name'] == name,
+                          );
+                          if (sourceIndex >= 0) {
+                            workers[sourceIndex]['rating'] = updatedRating;
+                          }
                         });
                       },
                     ),

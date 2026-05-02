@@ -4,6 +4,9 @@ class ChatContact {
   final String city;
   final String imageUrl;
   final List<String> starterMessages;
+  final int? quotedPriceTnd;
+  final int? minNegotiablePriceTnd;
+  final String? issueDescription;
 
   ChatContact({
     required this.name,
@@ -11,5 +14,8 @@ class ChatContact {
     required this.city,
     required this.imageUrl,
     required this.starterMessages,
+    this.quotedPriceTnd,
+    this.minNegotiablePriceTnd,
+    this.issueDescription,
   });
 }
