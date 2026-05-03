@@ -6,6 +6,7 @@ import 'package:day35/models/chat_contact.dart';
 import 'package:day35/pages/chat_detail.dart';
 import 'package:day35/pages/chat_list.dart';
 import 'package:day35/pages/after_sales.dart';
+import 'package:day35/pages/account_settings_page.dart';
 import 'package:day35/pages/notifications_page.dart';
 import 'package:day35/pages/edit_profile_page.dart';
 import 'package:day35/pages/onboarding_page.dart';
@@ -862,7 +863,10 @@ class _OffererDashboardState extends State<OffererDashboard> {
             Navigator.push(context, MaterialPageRoute(builder: (_) => const AfterSalesPage()));
           }),
           const Divider(indent: 20, endIndent: 20),
-          _buildDrawerItem(Icons.settings_rounded, AppLanguageController.instance.tr('account_settings'), () {}),
+          _buildDrawerItem(Icons.settings_rounded, AppLanguageController.instance.tr('account_settings'), () {
+            Navigator.pop(context);
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const AccountSettingsPage()));
+          }),
           const Spacer(),
           _buildDrawerItem(Icons.logout_rounded, AppLanguageController.instance.tr('logout'), () async {
             await StorageService.instance.logout();
