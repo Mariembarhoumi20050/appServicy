@@ -261,9 +261,9 @@ class _DateAndTimeState extends State<DateAndTime> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: _confirmBooking,
+                        onPressed: _safetyChecklistAccepted ? _confirmBooking : null,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: primary,
+                          backgroundColor: _safetyChecklistAccepted ? primary : Colors.grey,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),

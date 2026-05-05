@@ -111,7 +111,6 @@ class _VoiceScreenState extends State<VoiceScreen>
     'AC Repair':        'https://img.icons8.com/color/2x/air-conditioner.png',
     'Pest Control':     'https://img.icons8.com/color/2x/bug.png',
     'Appliance Repair': 'https://img.icons8.com/color/2x/maintenance.png',
-    'Babysitting':      'https://img.icons8.com/color/2x/nanny.png',
   };
 
   // ─── Init ─────────────────────────────────────────────────────────────────

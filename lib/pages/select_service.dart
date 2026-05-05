@@ -50,8 +50,6 @@ class _SelectServiceState extends State<SelectService> {
         Color(0xFF689F38), Icons.pest_control_rounded),
     _ServiceDef('Appliance Repair', 'https://img.icons8.com/color/96/maintenance.png',
         Color(0xFF546E7A), Icons.build_rounded),
-    _ServiceDef('Babysitting',      'https://img.icons8.com/color/96/nanny.png',
-        Color(0xFFF06292), Icons.child_care_rounded),
   ];
 
   int _selected = -1;

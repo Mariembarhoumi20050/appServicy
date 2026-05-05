@@ -51,19 +51,6 @@ class ChatListPage extends StatelessWidget {
         'Do you work in Khzema area?',
       ],
     ),
-    ChatContact(
-      name: 'Nour Kallel',
-      service: 'Babysitting',
-      city: 'Nabeul',
-      imageUrl: 'https://i.pravatar.cc/150?img=25',
-      quotedPriceTnd: 45,
-      minNegotiablePriceTnd: 38,
-      issueDescription: 'Babysitting for Friday evening (4 hours).',
-      isClient: true,
-      starterMessages: <String>[
-        'Hello, I need babysitting on Friday evening.',
-      ],
-    ),
   ];
 
   @override

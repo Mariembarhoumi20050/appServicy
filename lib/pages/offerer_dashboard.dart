@@ -10,6 +10,11 @@ import 'package:day35/pages/account_settings_page.dart';
 import 'package:day35/pages/notifications_page.dart';
 import 'package:day35/pages/edit_profile_page.dart';
 import 'package:day35/pages/onboarding_page.dart';
+import 'package:day35/pages/job_history_page.dart';
+import 'package:day35/pages/payouts_page.dart';
+import 'package:day35/pages/earnings_page.dart';
+import 'package:day35/pages/reliability_page.dart';
+import 'package:day35/pages/pending_jobs_page.dart';
 import 'package:day35/services/storage_service.dart';
 import 'package:day35/theme/app_theme.dart';
 import 'package:day35/widgets/app_actions.dart';
@@ -734,43 +739,54 @@ class _OffererDashboardState extends State<OffererDashboard> {
       mainAxisSpacing: 15,
       childAspectRatio: 1.4,
       children: [
-        _buildStatCard(AppLanguageController.instance.tr('jobs_done'), '48', Icons.task_alt_rounded, Colors.blue),
-        _buildStatCard(AppLanguageController.instance.tr('pending'), '3', Icons.hourglass_empty_rounded, Colors.orange),
-        _buildStatCard(AppLanguageController.instance.tr('reliability'), '98%', Icons.verified_user_rounded, Colors.green),
-        _buildStatCard(AppLanguageController.instance.tr('earnings'), '12k', Icons.account_balance_wallet_rounded, Colors.purple),
+        _buildStatCard(AppLanguageController.instance.tr('jobs_done'), '48', Icons.task_alt_rounded, Colors.blue, () {
+          Navigator.push(context, MaterialPageRoute(builder: (_) => const JobHistoryPage()));
+        }),
+        _buildStatCard(AppLanguageController.instance.tr('pending'), '3', Icons.hourglass_empty_rounded, Colors.orange, () {
+          Navigator.push(context, MaterialPageRoute(builder: (_) => const PendingJobsPage()));
+        }),
+        _buildStatCard(AppLanguageController.instance.tr('reliability'), '98%', Icons.verified_user_rounded, Colors.green, () {
+          Navigator.push(context, MaterialPageRoute(builder: (_) => const ReliabilityPage()));
+        }),
+        _buildStatCard(AppLanguageController.instance.tr('earnings'), '12k', Icons.account_balance_wallet_rounded, Colors.purple, () {
+          Navigator.push(context, MaterialPageRoute(builder: (_) => const EarningsPage()));
+        }),
       ],
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Icon(icon, color: color, size: 24),
-              Icon(Icons.chevron_right_rounded, color: Colors.grey.shade300, size: 18),
-            ],
-          ),
-          const Spacer(),
-          Text(
-            value,
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
-          ),
-          Text(
-            title,
-            style: TextStyle(color: Colors.grey.shade600, fontSize: 13, fontWeight: FontWeight.w500),
-          ),
-        ],
+  Widget _buildStatCard(String title, String value, IconData icon, Color color, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Icon(icon, color: color, size: 24),
+                Icon(Icons.chevron_right_rounded, color: Colors.grey.shade300, size: 18),
+              ],
+            ),
+            const Spacer(),
+            Text(
+              value,
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
+            ),
+            Text(
+              title,
+              style: TextStyle(color: Colors.grey.shade600, fontSize: 13, fontWeight: FontWeight.w500),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -795,10 +811,16 @@ class _OffererDashboardState extends State<OffererDashboard> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _buildActionItem(Icons.history_rounded, AppLanguageController.instance.tr('history')),
-          _buildActionItem(Icons.wallet_rounded, AppLanguageController.instance.tr('payouts')),
+          _buildActionItem(Icons.history_rounded, AppLanguageController.instance.tr('history'), () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const JobHistoryPage()));
+          }),
+          _buildActionItem(Icons.wallet_rounded, AppLanguageController.instance.tr('payouts'), () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const PayoutsPage()));
+          }),
           _buildActionItem(Icons.chat_bubble_outline_rounded, AppLanguageController.instance.tr('chats'), _openClientChats),
-          _buildActionItem(Icons.contact_support_rounded, AppLanguageController.instance.tr('support')),
+          _buildActionItem(Icons.contact_support_rounded, AppLanguageController.instance.tr('support'), () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const AfterSalesPage()));
+          }),
         ],
       ),
     );
@@ -853,7 +875,10 @@ class _OffererDashboardState extends State<OffererDashboard> {
             Navigator.pop(context);
             _goToEditProfile();
           }),
-          _buildDrawerItem(Icons.history_edu_rounded, AppLanguageController.instance.tr('job_history'), () {}),
+          _buildDrawerItem(Icons.history_edu_rounded, AppLanguageController.instance.tr('job_history'), () {
+            Navigator.pop(context);
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const JobHistoryPage()));
+          }),
           _buildDrawerItem(Icons.chat_bubble_outline_rounded, AppLanguageController.instance.tr('client_chats'), () {
             Navigator.pop(context);
             _openClientChats();

@@ -36,10 +36,10 @@ const List<_Svc> _kServices = [
   _Svc('Tailor',           'https://img.icons8.com/fluency/96/sewing-machine.png',                                                                                           Color(0xFF9C27B0), Icons.checkroom_rounded),
   _Svc('Maid',             'https://img.icons8.com/color/96/housekeeper-female.png',                                                                                         Color(0xFFE91E63), Icons.home_rounded),
   _Svc('Driver',           'https://img.icons8.com/external-sbts2018-lineal-color-sbts2018/96/external-driver-women-profession-sbts2018-lineal-color-sbts2018.png',          Color(0xFF1565C0), Icons.drive_eta_rounded),
+  _Svc('Cook',             'https://img.icons8.com/external-wanicon-flat-wanicon/96/external-cooking-daily-routine-wanicon-flat-wanicon.png',                                Color(0xFFFF7043), Icons.restaurant_rounded),
   _Svc('AC Repair',        'https://img.icons8.com/color/96/air-conditioner.png',                                                                                            Color(0xFF00BCD4), Icons.ac_unit_rounded),
   _Svc('Pest Control',     'https://img.icons8.com/color/96/bug.png',                                                                                                        Color(0xFF689F38), Icons.pest_control_rounded),
   _Svc('Appliance Repair', 'https://img.icons8.com/color/96/maintenance.png',                                                                                                Color(0xFF546E7A), Icons.build_rounded),
-  _Svc('Babysitting',      'https://img.icons8.com/color/96/nanny.png',                                                                                                      Color(0xFFF06292), Icons.child_care_rounded),
 ];
 
 class StartPage extends StatefulWidget {

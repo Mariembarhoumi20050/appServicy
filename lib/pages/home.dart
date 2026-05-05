@@ -37,7 +37,6 @@ class _HomePageState extends State<HomePage> {
     Service('AC Repair', 'https://img.icons8.com/color/2x/air-conditioner.png'),
     Service('Pest Control', 'https://img.icons8.com/color/2x/bug.png'),
     Service('Appliance Repair', 'https://img.icons8.com/color/2x/maintenance.png'),
-    Service('Babysitting', 'https://img.icons8.com/color/2x/nanny.png'),
   ];
 
   List<Map<String, dynamic>> workers = [

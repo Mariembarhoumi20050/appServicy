@@ -37,7 +37,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
   Timer? _safetyCheckInTimer;
   final AppUser? _currentUser = StorageService.instance.getUser();
   bool get _isProviderView =>
-      (_currentUser?.role.toLowerCase() == 'provider') || widget.contact.isClient;
+      _currentUser?.role.toLowerCase() == 'provider';
   int? get _clientBudgetTnd => widget.contact.clientBudgetTnd;
   static const Set<String> _blockedTerms = <String>{
     'stupid',
@@ -69,41 +69,85 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
     );
 
     if (history.isEmpty) {
-      _messages = [
-        ChatMessage(
-          senderId: widget.contact.name,
-          receiverId: _currentUser.id,
-          text: lang.tr('chat_welcome')
-              .replaceAll('{name}', widget.contact.name)
-              .replaceAll('{service}', lang.trService(widget.contact.service))
-              .replaceAll('{city}', widget.contact.city),
-          timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
-          isMine: false,
-        ),
-        for (int i = 0; i < widget.contact.starterMessages.length; i++)
+      if (_isProviderView) {
+        // Provider view: the contact is a CLIENT requesting service
+        // Client sends their request first, then provider responds
+        _messages = [
+          // Client sends their starter messages (request + budget)
+          for (int i = 0; i < widget.contact.starterMessages.length; i++)
+            ChatMessage(
+              senderId: widget.contact.name,
+              receiverId: _currentUser.id,
+              text: widget.contact.starterMessages[i],
+              timestamp: DateTime.now().subtract(Duration(minutes: 5 - i)),
+              isMine: false,
+            ),
+          if (widget.contact.issueDescription != null)
+            ChatMessage(
+              senderId: widget.contact.name,
+              receiverId: _currentUser.id,
+              text: widget.contact.issueDescription!,
+              timestamp: DateTime.now().subtract(const Duration(minutes: 3)),
+              isMine: false,
+            ),
+          // Provider welcomes and sends first quote
           ChatMessage(
             senderId: _currentUser.id,
             receiverId: widget.contact.name,
-            text: widget.contact.starterMessages[i],
-            timestamp: DateTime.now().subtract(Duration(minutes: 4 - i)),
+            text: lang.tr('chat_welcome')
+                .replaceAll('{name}', _currentUser?.name ?? 'Provider')
+                .replaceAll('{service}', lang.trService(widget.contact.service))
+                .replaceAll('{city}', widget.contact.city),
+            timestamp: DateTime.now().subtract(const Duration(minutes: 2)),
             isMine: true,
           ),
-        if (widget.contact.issueDescription != null)
+          ChatMessage(
+            senderId: _currentUser.id,
+            receiverId: widget.contact.name,
+            text: '${lang.tr('first_quote')}: $_currentQuote TND. ${lang.tr('negotiation_invite')}',
+            timestamp: DateTime.now().subtract(const Duration(minutes: 1)),
+            isMine: true,
+          ),
+        ];
+      } else {
+        // Client view: the contact is a PROVIDER offering service
+        // Provider welcomes first, then client sends their request
+        _messages = [
           ChatMessage(
             senderId: widget.contact.name,
             receiverId: _currentUser.id,
-            text: '${lang.tr('issue_noted')}: ${widget.contact.issueDescription}',
-            timestamp: DateTime.now().subtract(const Duration(minutes: 2)),
+            text: lang.tr('chat_welcome')
+                .replaceAll('{name}', widget.contact.name)
+                .replaceAll('{service}', lang.trService(widget.contact.service))
+                .replaceAll('{city}', widget.contact.city),
+            timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
             isMine: false,
           ),
-        ChatMessage(
-          senderId: widget.contact.name,
-          receiverId: _currentUser.id,
-          text: '${lang.tr('first_quote')}: $_currentQuote TND. ${lang.tr('negotiation_invite')}',
-          timestamp: DateTime.now().subtract(const Duration(minutes: 1)),
-          isMine: false,
-        ),
-      ];
+          for (int i = 0; i < widget.contact.starterMessages.length; i++)
+            ChatMessage(
+              senderId: _currentUser.id,
+              receiverId: widget.contact.name,
+              text: widget.contact.starterMessages[i],
+              timestamp: DateTime.now().subtract(Duration(minutes: 4 - i)),
+              isMine: true,
+            ),
+          if (widget.contact.issueDescription != null)
+            ChatMessage(
+              senderId: widget.contact.name,
+              receiverId: _currentUser.id,
+              text: '${lang.tr('issue_noted')}: ${widget.contact.issueDescription}',
+              timestamp: DateTime.now().subtract(const Duration(minutes: 2)),
+              isMine: false,
+            ),
+          ChatMessage(
+            senderId: widget.contact.name,
+            receiverId: _currentUser.id,
+            text: '${lang.tr('first_quote')}: $_currentQuote TND. ${lang.tr('negotiation_invite')}',
+            timestamp: DateTime.now().subtract(const Duration(minutes: 1)),
+            isMine: false,
+          ),
+        ];
+      }
       // Save initial messages
       for (var m in _messages) {
         StorageService.instance.saveMessage(m);

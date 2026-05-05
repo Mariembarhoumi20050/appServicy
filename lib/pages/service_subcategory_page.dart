@@ -29,7 +29,7 @@ class ServiceSubCategoryPage extends StatelessWidget {
     ],
     'Electrician': [
       {'name': 'Wiring', 'icon': 'https://img.icons8.com/color/2x/electricity.png'},
-      {'name': 'Socket/Switch', 'icon': 'https://img.icons8.com/color/2x/wall-mount-camera.png'},
+      {'name': 'Socket/Switch', 'icon': 'https://img.icons8.com/color/2x/electrical.png'},
       {'name': 'Lighting', 'icon': 'https://img.icons8.com/color/2x/light-on.png'},
       {'name': 'Troubleshooting', 'icon': 'https://img.icons8.com/color/2x/electrical-sensor.png'},
     ],
@@ -57,11 +57,41 @@ class ServiceSubCategoryPage extends StatelessWidget {
       {'name': 'Personal Driver', 'icon': 'https://img.icons8.com/color/2x/driver.png'},
       {'name': 'Delivery', 'icon': 'https://img.icons8.com/color/2x/delivery.png'},
     ],
-    'Babysitting': [
-      {'name': 'Hourly Care', 'icon': 'https://img.icons8.com/color/2x/clock.png'},
-      {'name': 'Full Day', 'icon': 'https://img.icons8.com/color/2x/sun.png'},
-      {'name': 'Night Stay', 'icon': 'https://img.icons8.com/color/2x/moon.png'},
-      {'name': 'Special Needs', 'icon': 'https://img.icons8.com/color/2x/heart-with-pulse.png'},
+    'Cook': [
+      {'name': 'Home Cooking', 'icon': 'https://img.icons8.com/color/2x/cooking-pot.png'},
+      {'name': 'Meal Prep', 'icon': 'https://img.icons8.com/color/2x/meal.png'},
+      {'name': 'Baking', 'icon': 'https://img.icons8.com/color/2x/bread.png'},
+      {'name': 'Catering', 'icon': 'https://img.icons8.com/color/2x/buffet.png'},
+    ],
+    'Tailor': [
+      {'name': 'Alterations', 'icon': 'https://img.icons8.com/color/2x/scissors.png'},
+      {'name': 'Custom Tailoring', 'icon': 'https://img.icons8.com/color/2x/sewing-machine.png'},
+      {'name': 'Dressmaking', 'icon': 'https://img.icons8.com/color/2x/dress.png'},
+      {'name': 'Suit Fitting', 'icon': 'https://img.icons8.com/color/2x/suit.png'},
+    ],
+    'Maid': [
+      {'name': 'Daily Maid', 'icon': 'https://img.icons8.com/color/2x/broom.png'},
+      {'name': 'Part-time Maid', 'icon': 'https://img.icons8.com/color/2x/clock.png'},
+      {'name': 'Live-in Maid', 'icon': 'https://img.icons8.com/color/2x/home.png'},
+      {'name': 'Special Occasion', 'icon': 'https://img.icons8.com/color/2x/party-baloons.png'},
+    ],
+    'AC Repair': [
+      {'name': 'AC Installation', 'icon': 'https://img.icons8.com/color/2x/air-conditioner.png'},
+      {'name': 'Gas Refill', 'icon': 'https://img.icons8.com/color/2x/filled-gas.png'},
+      {'name': 'AC Cleaning', 'icon': 'https://img.icons8.com/color/2x/cleaning-service.png'},
+      {'name': 'Compressor Repair', 'icon': 'https://img.icons8.com/color/2x/maintenance.png'},
+    ],
+    'Pest Control': [
+      {'name': 'Insect Control', 'icon': 'https://img.icons8.com/color/2x/bug.png'},
+      {'name': 'Rodent Control', 'icon': 'https://img.icons8.com/color/2x/mouse.png'},
+      {'name': 'Termite Treatment', 'icon': 'https://img.icons8.com/color/2x/termite.png'},
+      {'name': 'Fumigation', 'icon': 'https://img.icons8.com/color/2x/hazmat.png'},
+    ],
+    'Appliance Repair': [
+      {'name': 'Washing Machine', 'icon': 'https://img.icons8.com/color/2x/washing-machine.png'},
+      {'name': 'Refrigerator', 'icon': 'https://img.icons8.com/color/2x/fridge.png'},
+      {'name': 'Oven / Stove', 'icon': 'https://img.icons8.com/color/2x/stove.png'},
+      {'name': 'Dishwasher', 'icon': 'https://img.icons8.com/color/2x/dishwasher.png'},
     ],
   };
 
